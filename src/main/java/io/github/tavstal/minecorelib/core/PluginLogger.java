@@ -1,9 +1,6 @@
 package io.github.tavstal.minecorelib.core;
 
-import io.github.tavstal.minecorelib.models.PluginBase;
-import io.github.tavstal.openkits.OpenKits;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import io.github.tavstal.minecorelib.PluginBase;
 import java.util.logging.Logger;
 
 /**
@@ -13,6 +10,11 @@ public class PluginLogger {
     private final PluginBase<?> _plugin;
     private final Logger _logger;
 
+    /**
+     * Constructs a new PluginLogger instance.
+     *
+     * @param plugin The plugin instance associated with this logger.
+     */
     public PluginLogger(PluginBase<?> plugin) {
         _plugin = plugin;
         _logger = Logger.getLogger(plugin.getProjectName());

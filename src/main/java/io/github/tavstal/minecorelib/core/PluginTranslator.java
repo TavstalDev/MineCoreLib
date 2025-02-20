@@ -1,10 +1,9 @@
 package io.github.tavstal.minecorelib.core;
 
-import io.github.tavstal.minecorelib.models.PluginBase;
+import io.github.tavstal.minecorelib.PluginBase;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
