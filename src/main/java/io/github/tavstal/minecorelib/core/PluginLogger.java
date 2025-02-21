@@ -48,6 +48,16 @@ public class PluginLogger {
     }
 
     /**
+     * Creates a new PluginLogger instance with the specified module.
+     *
+     * @param module The class whose name will be used as the module name in log messages.
+     * @return A new PluginLogger instance with the specified module.
+     */
+    public PluginLogger WithModule(@NotNull Class<?> module) {
+        return new PluginLogger(_plugin,module.getName());
+    }
+
+    /**
      * Logs a message with the specified severity level.
      *
      * @param level The severity level of the log message.
