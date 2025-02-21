@@ -25,8 +25,7 @@ import java.util.Objects;
  * Provides common functionality such as logging, translation, and version checking.
  *
  */
-public abstract class PluginBase<T extends PluginBase<T>> extends JavaPlugin {
-    public static PluginBase<?> Instance;
+public abstract class PluginBase extends JavaPlugin {
     private final PluginLogger _logger;
     private final PluginTranslator _translator;
     private final String _projectName;
@@ -50,7 +49,6 @@ public abstract class PluginBase<T extends PluginBase<T>> extends JavaPlugin {
         _downloadUrl = downloadUrl;
         _logger = new PluginLogger(this);
         _translator = new PluginTranslator(this, locales);
-        Instance = this;
     }
 
     /**

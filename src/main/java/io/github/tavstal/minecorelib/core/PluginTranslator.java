@@ -22,7 +22,7 @@ import java.util.Map;
  * Utility class for handling localization using YAML files.
  */
 public class PluginTranslator {
-    private final PluginBase<?> _plugin;
+    private final PluginBase _plugin;
     private final PluginLogger _logger;
     private final String[] _locales;
     private String _defaultLocale = "eng";
@@ -34,7 +34,7 @@ public class PluginTranslator {
      * @param plugin The plugin instance associated with this translator.
      * @param locales The array of supported locales for translation.
      */
-    public PluginTranslator(PluginBase<?> plugin, String[] locales) {
+    public PluginTranslator(PluginBase plugin, String[] locales) {
         _plugin = plugin;
         _locales = locales;
         _logger = plugin.getCustomLogger();

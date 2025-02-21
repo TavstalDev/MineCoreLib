@@ -7,7 +7,7 @@ import java.util.logging.Logger;
  * Utility class for logging messages with different severity levels.
  */
 public class PluginLogger {
-    private final PluginBase<?> _plugin;
+    private final PluginBase _plugin;
     private final Logger _logger;
 
     /**
@@ -15,7 +15,7 @@ public class PluginLogger {
      *
      * @param plugin The plugin instance associated with this logger.
      */
-    public PluginLogger(PluginBase<?> plugin) {
+    public PluginLogger(PluginBase plugin) {
         _plugin = plugin;
         _logger = Logger.getLogger(plugin.getProjectName());
     }

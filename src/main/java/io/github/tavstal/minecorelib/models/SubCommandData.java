@@ -43,7 +43,7 @@ public class SubCommandData {
      *
      * @param player the player to send the message to
      */
-    public void send(PluginBase<?> plugin, Player player) {
+    public void send(PluginBase plugin, Player player) {
         if (arguments == null)
             return;
 
