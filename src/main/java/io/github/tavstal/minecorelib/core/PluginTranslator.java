@@ -28,6 +28,12 @@ public class PluginTranslator {
     private String _defaultLocale = "eng";
     private Map<String, Map<String, Object>> _localization;
 
+    /**
+     * Constructs a new PluginTranslator instance.
+     *
+     * @param plugin The plugin instance associated with this translator.
+     * @param locales The array of supported locales for translation.
+     */
     public PluginTranslator(PluginBase<?> plugin, String[] locales) {
         _plugin = plugin;
         _locales = locales;
