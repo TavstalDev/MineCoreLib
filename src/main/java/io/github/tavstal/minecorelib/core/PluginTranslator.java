@@ -50,15 +50,15 @@ public class PluginTranslator {
         _localization = new HashMap<>();
         _defaultLocale = _plugin.getConfig().getString("locale");
 
-        _logger.LogDebug("Checking lang directory...");
+        _logger.Debug("Checking lang directory...");
         Path dirPath = Paths.get(_plugin.getDataFolder().getPath(), "lang");
         if (!Files.exists(dirPath) || isDirectoryEmpty(dirPath)) {
             try {
-                _logger.LogDebug("Creating lang directory...");
+                _logger.Debug("Creating lang directory...");
                 Files.createDirectory(dirPath);
 
                 for (String locale : _locales) {
-                    _logger.LogDebug("Creating lang file...");
+                    _logger.Debug("Creating lang file...");
                     Path filePath = Paths.get(dirPath.toString(), locale + ".yml");
                     if (Files.exists(filePath))
                         continue;
@@ -66,28 +66,28 @@ public class PluginTranslator {
                     try {
                         inputStream = _plugin.getResource("lang/" + locale + ".yml");
                         if (inputStream == null) {
-                            _logger.LogDebug(String.format("Failed to get localization file for locale '%s'.", locale));
+                            _logger.Debug(String.format("Failed to get localization file for locale '%s'.", locale));
                         } else
                             Files.copy(inputStream, filePath);
                     } catch (IOException ex) {
-                        _logger.LogWarning(String.format("Failed to create lang file for locale '%s'.", locale));
-                        _logger.LogError(ex.getMessage());
+                        _logger.Warn(String.format("Failed to create lang file for locale '%s'.", locale));
+                        _logger.Error(ex.getMessage());
                         return false;
                     }
                 }
             } catch (IOException ex) {
-                _logger.LogWarning("Failed to create lang directory.");
-                _logger.LogError(ex.getMessage());
+                _logger.Warn("Failed to create lang directory.");
+                _logger.Error(ex.getMessage());
                 return false;
             }
         }
 
-        _logger.LogDebug("Reading lang directory...");
+        _logger.Debug("Reading lang directory...");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath)) {
-            _logger.LogDebug("Reading lang files...");
+            _logger.Debug("Reading lang files...");
             for (Path entry : stream) {
                 String fileName = entry.getFileName().toString();
-                _logger.LogDebug("Reading file: " + fileName);
+                _logger.Debug("Reading file: " + fileName);
                 if (!(fileName.endsWith(".yml") || fileName.endsWith(".yaml")))
                     continue;
 
@@ -97,38 +97,38 @@ public class PluginTranslator {
                 }
                 catch (FileNotFoundException ex)
                 {
-                    _logger.LogError(String.format("Failed to get localization file. Path: %s", entry));
+                    _logger.Error(String.format("Failed to get localization file. Path: %s", entry));
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("Unknown error happened while reading locale file.");
-                    _logger.LogError(ex.getMessage());
+                    _logger.Warn("Unknown error happened while reading locale file.");
+                    _logger.Error(ex.getMessage());
                     return false;
                 }
 
-                _logger.LogDebug("Loading yaml file...");
+                _logger.Debug("Loading yaml file...");
                 Yaml yaml = new Yaml();
                 Object yamlObject = yaml.load(inputStream);
                 if (!(yamlObject instanceof Map))
                 {
-                    _logger.LogError("Failed to cast the yamlObject after reading the localization.");
+                    _logger.Error("Failed to cast the yamlObject after reading the localization.");
                     return false;
                 }
 
-                _logger.LogDebug("Casting yamlObject to Map...");
+                _logger.Debug("Casting yamlObject to Map...");
                 try {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> localValue = (Map<String, Object>) yamlObject;
                     _localization.put(fileName.split("\\.")[0], localValue); // Warning fix
                 } catch (Exception ex) {
-                    _logger.LogWarning("Failed to cast the yamlObject to Map.");
-                    _logger.LogError(ex.getMessage());
+                    _logger.Warn("Failed to cast the yamlObject to Map.");
+                    _logger.Error(ex.getMessage());
                 }
             }
         } catch (IOException ex) {
-            _logger.LogWarning("Failed to read the lang directory.");
-            _logger.LogError(ex.getMessage());
+            _logger.Warn("Failed to read the lang directory.");
+            _logger.Error(ex.getMessage());
             return false;
         }
         return true;
@@ -148,8 +148,8 @@ public class PluginTranslator {
             return player.locale().getISO3Language();
         }
         catch (Exception ex) {
-            _logger.LogWarning("Failed to get the player's locale.");
-            _logger.LogError(ex.getMessage());
+            _logger.Warn("Failed to get the player's locale.");
+            _logger.Error(ex.getMessage());
             return "eng";
         }
     }
@@ -169,7 +169,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return "";
                 }
             }
@@ -178,8 +178,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return "";
         }
     }
@@ -199,7 +199,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return new ArrayList<>();
                 }
             }
@@ -208,8 +208,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return new ArrayList<>();
         }
     }
@@ -229,7 +229,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return new String[0];
                 }
             }
@@ -238,8 +238,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return new String[0];
         }
     }
@@ -260,7 +260,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return "";
                 }
             }
@@ -269,8 +269,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return "";
         }
     }
@@ -291,7 +291,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return "";
                 }
             }
@@ -300,8 +300,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return "";
         }
     }
@@ -322,7 +322,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return new ArrayList<>();
                 }
             }
@@ -331,8 +331,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return new ArrayList<>();
         }
     }
@@ -353,7 +353,7 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return new String[0];
                 }
             }
@@ -362,8 +362,8 @@ public class PluginTranslator {
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return new String[0];
         }
     }
@@ -384,15 +384,15 @@ public class PluginTranslator {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.LogWarning(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
                     return "";
                 }
             }
 
             return MessageFormat.format(value.toString(), args);
         } catch (Exception ex) {
-            _logger.LogWarning(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.LogError(ex.getMessage());
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
             return "";
         }
 
@@ -412,8 +412,8 @@ public class PluginTranslator {
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dirPath)) {
             return !directoryStream.iterator().hasNext();
         } catch (IOException ex) {
-            _logger.LogError("Failed to check if directory is empty: ");
-            _logger.LogError(ex.getMessage());
+            _logger.Error("Failed to check if directory is empty: ");
+            _logger.Error(ex.getMessage());
             return false;
         }
     }

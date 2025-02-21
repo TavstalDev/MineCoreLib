@@ -17,6 +17,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -109,15 +112,15 @@ public abstract class PluginBase extends JavaPlugin {
      * Reloads the plugin configuration and localizations.
      */
     public void reload() {
-        _logger.LogInfo(String.format("Reloading %s...", _projectName));
-        _logger.LogDebug("Reloading localizations...");
+        _logger.Info(String.format("Reloading %s...", _projectName));
+        _logger.Debug("Reloading localizations...");
         if (_translator.Load())
-            _logger.LogDebug("Localizations reloaded.");
+            _logger.Debug("Localizations reloaded.");
         else
-            _logger.LogError("Failed to reload localizations.");
-        _logger.LogDebug("Reloading configuration...");
+            _logger.Error("Failed to reload localizations.");
+        _logger.Debug("Reloading configuration...");
         this.reloadConfig();
-        _logger.LogDebug("Configuration reloaded.");
+        _logger.Debug("Configuration reloaded.");
     }
 
     /**
@@ -126,28 +129,28 @@ public abstract class PluginBase extends JavaPlugin {
      */
     public boolean isUpToDate() {
         String version;
-        _logger.LogDebug("Checking for updates...");
+        _logger.Debug("Checking for updates...");
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            _logger.LogDebug("Sending request to GitHub...");
+            _logger.Debug("Sending request to GitHub...");
             HttpGet request = new HttpGet(_downloadUrl);
             HttpResponse response = httpClient.execute(request);
-            _logger.LogDebug("Received response from GitHub.");
+            _logger.Debug("Received response from GitHub.");
             String jsonResponse = EntityUtils.toString(response.getEntity());
-            _logger.LogDebug("Parsing response...");
+            _logger.Debug("Parsing response...");
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(jsonResponse);
-            _logger.LogDebug("Parsing release version...");
+            _logger.Debug("Parsing release version...");
             version = jsonObject.get("tag_name").toString();
         } catch (IOException e) {
-            _logger.LogError("Failed to check for updates.");
+            _logger.Error("Failed to check for updates.");
             return false;
         } catch (ParseException e) {
-            _logger.LogError("Failed to parse release version.");
+            _logger.Error("Failed to parse release version.");
             return false;
         }
 
-        _logger.LogDebug("Current version: " + _version);
-        _logger.LogDebug("Latest version: " + version);
+        _logger.Debug("Current version: " + _version);
+        _logger.Debug("Latest version: " + version);
         return version.equalsIgnoreCase(_version);
     }
 
@@ -204,5 +207,91 @@ public abstract class PluginBase extends JavaPlugin {
         }
 
         sendRichMsg(player, rawMessage);
+    }
+
+    /**
+     * Localizes a given key to its corresponding value.
+     *
+     * @param key the key to be localized.
+     * @return the localized string, or an empty string if the key is not found.
+     */
+    public String Localize(String key) {
+        return getTranslator().Localize(key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding list of values.
+     *
+     * @param key the key to be localized.
+     * @return the localized list of strings, or an empty list if the key is not found.
+     */
+    public List<String> LocalizeList(String key) {
+        return LocalizeList(key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding array of values.
+     *
+     * @param key the key to be localized.
+     * @return the localized array of strings, or an empty array if the key is not found.
+     */
+    public String[] LocalizeArray(String key) {
+       return LocalizeArray(key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding value and formats it with the provided arguments.
+     *
+     * @param key the key to be localized.
+     * @param args the arguments to format the localized string.
+     * @return the formatted localized string, or an empty string if the key is not found.
+     */
+    public String Localize(String key, Object... args) {
+        return getTranslator().Localize(key, args);
+    }
+
+    /**
+     * Localizes a given key to its corresponding value for a specific player.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @return The localized string, or an empty string if the key is not found.
+     */
+    public String Localize(Player player, String key) {
+        return getTranslator().Localize(player, key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding list of values for a specific player.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @return The localized list of strings, or an empty list if the key is not found.
+     */
+    public List<String> LocalizeList(Player player, String key) {
+        return LocalizeList(player, key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding array of values for a specific player.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @return The localized array of strings, or an empty array if the key is not found.
+     */
+    public String[] LocalizeArray(Player player,String key) {
+        return getTranslator().LocalizeArray(player, key);
+    }
+
+    /**
+     * Localizes a given key to its corresponding value for a specific player and formats it with the provided arguments.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @param args The arguments to format the localized string.
+     * @return The formatted localized string, or an empty string if the key is not found.
+     */
+    public String Localize(Player player,String key, Object... args) {
+        return getTranslator().Localize(player, key, args);
     }
 }
