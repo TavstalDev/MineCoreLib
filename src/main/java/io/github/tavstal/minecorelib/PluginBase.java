@@ -226,7 +226,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return the localized list of strings, or an empty list if the key is not found.
      */
     public List<String> LocalizeList(String key) {
-        return LocalizeList(key);
+        return getTranslator().LocalizeList(key);
     }
 
     /**
@@ -236,7 +236,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return the localized array of strings, or an empty array if the key is not found.
      */
     public String[] LocalizeArray(String key) {
-       return LocalizeArray(key);
+       return getTranslator().LocalizeArray(key);
     }
 
     /**
@@ -269,7 +269,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return The localized list of strings, or an empty list if the key is not found.
      */
     public List<String> LocalizeList(Player player, String key) {
-        return LocalizeList(player, key);
+        return getTranslator().LocalizeList(player, key);
     }
 
     /**
