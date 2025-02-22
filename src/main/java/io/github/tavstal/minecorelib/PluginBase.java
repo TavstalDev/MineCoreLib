@@ -171,7 +171,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param message The raw message containing '&' color codes.
      */
     public void sendRichMsg(Player player, String message) {
-        player.sendMessage(ChatUtils.translateColors(message, true));
+        player.sendMessage(ChatUtils.translateColors(replacePlaceholders(message), true));
     }
 
     /**
@@ -182,7 +182,7 @@ public abstract class PluginBase extends JavaPlugin {
      */
     public void sendLocalizedMsg(Player player, String key) {
         String rawMessage = _translator.Localize(player, key);
-        sendRichMsg(player, rawMessage);
+        sendRichMsg(player, replacePlaceholders(rawMessage));
     }
 
     /**
@@ -206,7 +206,7 @@ public abstract class PluginBase extends JavaPlugin {
             rawMessage = rawMessage.replace(finalKey, parameters.get(dirKey).toString());
         }
 
-        sendRichMsg(player, rawMessage);
+        sendRichMsg(player, replacePlaceholders(rawMessage));
     }
 
     /**
