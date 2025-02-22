@@ -17,8 +17,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -246,7 +244,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param args the arguments to format the localized string.
      * @return the formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(String key, Object... args) {
+    public String Localize(String key, Map<String, Object> args) {
         return getTranslator().Localize(key, args);
     }
 
@@ -291,7 +289,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param args The arguments to format the localized string.
      * @return The formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(Player player,String key, Object... args) {
+    public String Localize(Player player,String key, Map<String, Object> args) {
         return getTranslator().Localize(player, key, args);
     }
 }

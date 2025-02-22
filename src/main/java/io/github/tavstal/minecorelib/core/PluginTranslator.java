@@ -2,6 +2,7 @@ package io.github.tavstal.minecorelib.core;
 
 import io.github.tavstal.minecorelib.PluginBase;
 import org.bukkit.entity.Player;
+import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import java.io.FileInputStream;
@@ -251,7 +252,7 @@ public class PluginTranslator {
      * @param args the arguments to format the localized string.
      * @return the formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(String key, Object... args) {
+    public String Localize(String key, Map<String, Object> args) {
         try
         {
             String[] keys = key.split("\\.");
@@ -265,7 +266,19 @@ public class PluginTranslator {
                 }
             }
 
-            return MessageFormat.format(value.toString(), args);
+            // Get the keys
+            String result = value.toString();
+            var argKeys = args.keySet();
+            for (@RegExp var dirKey : argKeys) {
+                @RegExp String finalKey;
+                if (dirKey.startsWith("%"))
+                    finalKey = dirKey;
+                else
+                    finalKey = "%" + dirKey + "%";
+                result  = result.replace(finalKey, args.get(dirKey).toString());
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
@@ -376,7 +389,7 @@ public class PluginTranslator {
      * @param args The arguments to format the localized string.
      * @return The formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(Player player,String key, Object... args) {
+    public String Localize(Player player,String key, Map<String, Object> args) {
         try {
             String[] keys = key.split("\\.");
             Object value = _localization.get(GetPlayerLocale(player));
@@ -389,7 +402,19 @@ public class PluginTranslator {
                 }
             }
 
-            return MessageFormat.format(value.toString(), args);
+            // Get the keys
+            String result = value.toString();
+            var argKeys = args.keySet();
+            for (@RegExp var dirKey : argKeys) {
+                @RegExp String finalKey;
+                if (dirKey.startsWith("%"))
+                    finalKey = dirKey;
+                else
+                    finalKey = "%" + dirKey + "%";
+                result  = result.replace(finalKey, args.get(dirKey).toString());
+            }
+
+            return result;
         } catch (Exception ex) {
             _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
             _logger.Error(ex.getMessage());
