@@ -5,15 +5,12 @@ import org.bukkit.entity.Player;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +118,18 @@ public class PluginTranslator {
                 try {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> localValue = (Map<String, Object>) yamlObject;
-                    _localization.put(fileName.split("\\.")[0], localValue); // Warning fix
+                    String lang = fileName.split("\\.")[0];
+                    _localization.put(lang, localValue); // Warning fix
+                    // TODO: Test it
+                    Map<String, Object> updatedLocale = updateLocalization(lang);
+                    if (updatedLocale == null)
+                        return true;
+
+                    _localization.put(lang, updatedLocale);
+                    Path filePath = Paths.get(dirPath.toString(), lang + ".yml");
+                    try (FileWriter writer = new FileWriter(filePath.toString())) {
+                        yaml.dump(updatedLocale, writer);
+                    }
                 } catch (Exception ex) {
                     _logger.Warn("Failed to cast the yamlObject to Map.");
                     _logger.Error(ex.getMessage());
@@ -135,6 +143,87 @@ public class PluginTranslator {
         return true;
     }
 
+    /**
+     * Updates the localization for a given language.
+     *
+     * @param lang The language code for which the localization should be updated.
+     * @return A map containing the updated localization values, or null if an error occurs.
+     */
+    private Map<String, Object> updateLocalization(@NotNull String lang) {
+        if (!_localization.containsKey(lang))
+            return null;
+        Map<String, Object> localValue = _localization.get(lang);
+        if (localValue == null || localValue.isEmpty())
+            return null;
+
+        int fileVersion = 0;
+        String rawVersion = Localize(localValue, "FileVersion");
+        if (rawVersion != null && !rawVersion.isEmpty()) {
+            try {
+                fileVersion = Integer.parseInt(rawVersion);
+            } catch (NumberFormatException ex) {
+                _logger.Warn("Failed to parse the file version.");
+                _logger.Error(ex.getMessage());
+                return null;
+            }
+        }
+
+        InputStream inputStream;
+        try {
+            inputStream = _plugin.getResource("lang/" + lang + ".yml");
+            if (inputStream == null) {
+                _logger.Debug(String.format("Failed to get localization file for locale '%s'.", lang));
+                return null;
+            }
+
+            _logger.Debug("Loading yaml file...");
+            Yaml yaml = new Yaml();
+            Object yamlObject = yaml.load(inputStream);
+            if (!(yamlObject instanceof Map))
+            {
+                _logger.Error("Failed to cast the yamlObject after reading the localization.");
+                return null;
+            }
+
+            _logger.Debug("Casting yamlObject to Map...");
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> resourceYaml = (Map<String, Object>) yamlObject;
+                int resourceVersion = 0;
+                String rawResourceVersion = Localize(resourceYaml, "FileVersion");
+                if (rawResourceVersion != null && !rawResourceVersion.isEmpty()) {
+                    try {
+                        resourceVersion = Integer.parseInt(rawResourceVersion);
+                    } catch (NumberFormatException ex) {
+                        _logger.Warn("Failed to parse the file version.");
+                        _logger.Error(ex.getMessage());
+                        return null;
+                    }
+                }
+
+                if (resourceVersion <= fileVersion)
+                    return null;
+
+                for (String key : localValue.keySet()) {
+                    if (key.equals("FileVersion"))
+                        continue;
+
+                    if (!resourceYaml.containsKey(key))
+                        continue;
+
+                    resourceYaml.put(key, localValue.get(key));
+                }
+                return resourceYaml;
+            } catch (Exception ex) {
+                _logger.Warn("Failed to cast the yamlObject to Map.");
+                _logger.Error(ex.getMessage());
+            }
+        } catch (Exception ex) {
+            _logger.Warn(String.format("Failed to create lang file for locale '%s'.", lang));
+            _logger.Error(ex.getMessage());
+        }
+        return null;
+    }
 
     /**
      * Retrieves the player's locale in ISO 639-3 language code format.
@@ -155,6 +244,30 @@ public class PluginTranslator {
         }
     }
 
+   private String Localize(Map<String, Object> localeList, String key) {
+        try
+        {
+            String[] keys = key.split("\\.");
+            Object value = localeList;
+            for (String k : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(k);
+                } else {
+                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    return "";
+                }
+            }
+
+            return value.toString();
+        }
+        catch (Exception ex)
+        {
+            _logger.Warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.Error(ex.getMessage());
+            return "";
+        }
+    }
+
     /**
      * Localizes a given key to its corresponding value.
      *
@@ -165,7 +278,7 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization;
+            Object value =_localization.get(_defaultLocale);
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
@@ -195,7 +308,7 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization;
+            Object value = _localization.get(_defaultLocale);
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
@@ -225,7 +338,7 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization;
+            Object value = _localization.get(_defaultLocale);
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
@@ -256,7 +369,7 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization;
+            Object value = _localization.get(_defaultLocale);
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
