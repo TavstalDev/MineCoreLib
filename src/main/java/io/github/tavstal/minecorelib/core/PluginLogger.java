@@ -54,7 +54,7 @@ public class PluginLogger {
      * @return A new PluginLogger instance with the specified module.
      */
     public PluginLogger WithModule(@NotNull Class<?> module) {
-        return new PluginLogger(_plugin,module.getName());
+        return new PluginLogger(_plugin,module.getName().replace("io.github.tavstal.", ""));
     }
 
     /**
