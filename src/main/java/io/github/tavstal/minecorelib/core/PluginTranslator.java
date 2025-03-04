@@ -4,6 +4,7 @@ import io.github.tavstal.minecorelib.PluginBase;
 import org.bukkit.entity.Player;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -177,7 +178,10 @@ public class PluginTranslator {
             }
 
             _logger.Debug("Loading yaml file...");
-            Yaml yaml = new Yaml();
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
+            options.setIndent(2);
+            Yaml yaml = new Yaml(options);
             Object yamlObject = yaml.load(inputStream);
             if (!(yamlObject instanceof Map))
             {

@@ -3,6 +3,7 @@ package io.github.tavstal.minecorelib.models;
 import io.github.tavstal.minecorelib.PluginBase;
 import io.github.tavstal.minecorelib.core.PluginLogger;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -55,7 +56,10 @@ public abstract class ConfigBase {
      * @return A new Yaml instance.
      */
     protected Yaml createYaml() {
-        return new Yaml();
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
+        options.setIndent(2);
+        return new Yaml(options);
     }
 
     /**
