@@ -107,7 +107,10 @@ public class PluginTranslator {
                 }
 
                 _logger.Debug("Loading yaml file...");
-                Yaml yaml = new Yaml();
+                DumperOptions options = new DumperOptions();
+                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
+                options.setIndent(2);
+                Yaml yaml = new Yaml(options);
                 Object yamlObject = yaml.load(inputStream);
                 if (!(yamlObject instanceof Map))
                 {
