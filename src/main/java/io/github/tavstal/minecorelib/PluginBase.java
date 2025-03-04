@@ -173,6 +173,30 @@ public abstract class PluginBase extends JavaPlugin {
     }
 
     /**
+     * Sends a colored message to a player with placeholders replaced by actual values from the provided parameters.
+     *
+     * @param player     The player to send the message to.
+     * @param message    The raw message containing '&' color codes and placeholders.
+     * @param parameters The dictionary containing placeholder keys and their corresponding values.
+     */
+    public void sendRichMsg(Player player, String message, Map<String, Object> parameters) {
+        String rawMessage = message;
+
+        // Get the keys
+        var keys = parameters.keySet();
+        for (@RegExp var dirKey : keys) {
+            @RegExp String finalKey;
+            if (dirKey.startsWith("%"))
+                finalKey = dirKey;
+            else
+                finalKey = "%" + dirKey + "%";
+            rawMessage = rawMessage.replace(finalKey, parameters.get(dirKey).toString());
+        }
+
+        sendRichMsg(player, replacePlaceholders(rawMessage));
+    }
+
+    /**
      * Retrieves a localized message, translates color codes, and sends it to a player.
      *
      * @param player     The player to send the message to.
