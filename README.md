@@ -39,6 +39,8 @@ Create the main class that extends `PluginBase` to manage your plugin's configur
 ```java
 public class ExamplePlugin extends PluginBase {
     public static ExamplePlugin Instance;
+    private final PluginLogger _logger;
+    private final PluginTranslator _translator;
     public static PluginLogger Logger() {
         return Instance.getCustomLogger();
     }
@@ -57,32 +59,34 @@ public class ExamplePlugin extends PluginBase {
                 // ISO 639 three letter language codes
                 new String[]{"eng", "ger", "spa", "hun"}
         );
+        _logger = getCustomLogger();
+        _translator = getTranslator();
     }
 
     @Override
     public void onEnable() {
         Instance = this;
-        getCustomLogger().Info(String.format("Loading %s...", getProjectName()));
+        _logger.Info(String.format("Loading %s...", getProjectName()));
 
         // Generate config file
         saveDefaultConfig();
 
         // Load Localizations
-        if (!getTranslator().Load())
+        if (!_translator.Load())
         {
-            getCustomLogger().Error("Failed to load localizations... Unloading...");
+            _logger.Error("Failed to load localizations... Unloading...");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
 
-        getCustomLogger().Info(String.format("%s has been successfully loaded.", getProjectName()));
+        _logger.Info(String.format("%s has been successfully loaded.", getProjectName()));
         if (!isUpToDate())
-            getCustomLogger().Warn(String.format("A new version of %s is available! Download it at %s", getProjectName(), getDownloadUrl()));
+            _logger.Warn(String.format("A new version of %s is available! Download it at %s", getProjectName(), getDownloadUrl()));
     }
 
     @Override
     public void onDisable() {
-        getCustomLogger().Info(String.format("%s has been successfully unloaded.", getProjectName()));
+        _logger.Info(String.format("%s has been successfully unloaded.", getProjectName()));
     }
 
     @Override
@@ -99,13 +103,13 @@ public class ExamplePlugin extends PluginBase {
      * Reloads the plugin configuration and localizations.
      */
     public void reload() {
-        getCustomLogger().Info(String.format("Reloading %s...", getProjectName()));
-        getCustomLogger().Debug("Reloading localizations...");
-        getTranslator().Load();
-        getCustomLogger().Debug("Localizations reloaded.");
-        getCustomLogger().Debug("Reloading configuration...");
+        _logger.Info(String.format("Reloading %s...", getProjectName()));
+        _logger.Debug("Reloading localizations...");
+        _translator.Load();
+        _logger.Debug("Localizations reloaded.");
+        _logger.Debug("Reloading configuration...");
         this.reloadConfig();
-        getCustomLogger().Debug("Configuration reloaded.");
+        _logger.Debug("Configuration reloaded.");
     }
 }
 ```
