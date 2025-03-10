@@ -251,6 +251,13 @@ public class PluginTranslator {
         }
     }
 
+    /**
+     * Localizes a given key to its corresponding value from the provided locale list.
+     *
+     * @param localeList The map containing localization data.
+     * @param key The key to be localized.
+     * @return The localized string, or an empty string if the key is not found or an error occurs.
+     */
    private String Localize(Map<String, Object> localeList, String key) {
         try
         {
