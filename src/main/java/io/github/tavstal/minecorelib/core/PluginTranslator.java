@@ -419,12 +419,17 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization.get(GetPlayerLocale(player));
+            String locale = GetPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
+
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
                     return "";
                 }
             }
@@ -450,12 +455,16 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization.get(GetPlayerLocale(player));
+            String locale = GetPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
                     return new ArrayList<>();
                 }
             }
@@ -481,12 +490,16 @@ public class PluginTranslator {
         try
         {
             String[] keys = key.split("\\.");
-            Object value = _localization.get(GetPlayerLocale(player));
+            String locale = GetPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
                     return new String[0];
                 }
             }
@@ -512,12 +525,16 @@ public class PluginTranslator {
     public String Localize(Player player,String key, Map<String, Object> args) {
         try {
             String[] keys = key.split("\\.");
-            Object value = _localization.get(GetPlayerLocale(player));
+            String locale = GetPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
             for (String k : keys) {
                 if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(k);
                 } else {
-                    _logger.Warn(String.format("Failed to get the translation for the '%s' translation key.", key));
+                    _logger.Warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
                     return "";
                 }
             }
