@@ -1,22 +1,20 @@
 package io.github.tavstal.minecorelib;
 
+import com.google.gson.*;
 import io.github.tavstal.minecorelib.core.PluginLogger;
 import io.github.tavstal.minecorelib.core.PluginTranslator;
 import io.github.tavstal.minecorelib.utils.ChatUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +27,8 @@ import java.util.Objects;
 public abstract class PluginBase extends JavaPlugin {
     private final PluginLogger _logger;
     private final PluginTranslator _translator;
+    private final HttpClient _httpClient;
+    private final Gson _gson;
     private final String _projectName;
     private final String _version;
     private final String _author;
@@ -50,6 +50,14 @@ public abstract class PluginBase extends JavaPlugin {
         _downloadUrl = downloadUrl;
         _logger = new PluginLogger(this);
         _translator = new PluginTranslator(this, locales);
+
+        _gson = new GsonBuilder().setPrettyPrinting().create();
+
+        _httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2) // Prefer HTTP/2 if available
+                .followRedirects(HttpClient.Redirect.NORMAL) // Follow redirects
+                .connectTimeout(Duration.ofSeconds(120)) // Connection timeout
+                .build();
     }
 
     /**
@@ -107,6 +115,15 @@ public abstract class PluginBase extends JavaPlugin {
     }
 
     /**
+     * Retrieves the HTTP client used by the plugin.
+     * The HTTP client is pre-configured with HTTP/2 support,
+     * normal redirect following, and a connection timeout of 120 seconds.
+     *
+     * @return The configured {@link HttpClient} instance.
+     */
+    public @NotNull HttpClient getHttpClient() { return _httpClient; }
+
+    /**
      * Reloads the plugin configuration and localizations.
      */
     public void reload() {
@@ -122,31 +139,76 @@ public abstract class PluginBase extends JavaPlugin {
     }
 
     /**
-     * Checks if the plugin is up to date by comparing the current version with the latest release version.
-     * @return true if the plugin is up to date, false otherwise.
+     * Checks if the plugin is up-to-date by comparing the current version with the latest version
+     * retrieved from the specified download URL.
+     *
+     * This method performs an asynchronous HTTP GET request to fetch the latest version information
+     * in JSON format. It parses the response and compares the "tag_name" field with the current version.
+     * Logs debug, warning, and error messages during the process.
+     *
+     * @return {@code true} if the plugin is up-to-date, {@code false} otherwise.
      */
     public boolean isUpToDate() {
-        String version;
         _logger.Debug("Checking for updates...");
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            _logger.Debug("Sending request to GitHub...");
-            HttpGet request = new HttpGet(_downloadUrl);
-            HttpResponse response = httpClient.execute(request);
-            _logger.Debug("Received response from GitHub.");
-            String jsonResponse = EntityUtils.toString(response.getEntity());
-            _logger.Debug("Parsing response...");
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(jsonResponse);
-            _logger.Debug("Parsing release version...");
-            version = jsonObject.get("tag_name").toString();
-        } catch (IOException e) {
-            _logger.Error("Failed to check for updates.");
-            return false;
-        } catch (ParseException e) {
-            _logger.Error("Failed to parse release version.");
-            return false;
-        }
+        // Build the HTTP request to fetch the latest version information
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(_downloadUrl))
+                .header("Accept", "application/json")
+                .timeout(Duration.ofSeconds(15))
+                .GET()
+                .build();
 
+        // Send the request asynchronously and process the response
+        var result = _httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    // Check HTTP status code
+                    if (response.statusCode() != 200) {
+                        _logger.Warn("GET request failed for " + _downloadUrl + ". Status: " + response.statusCode());
+                        throw new RuntimeException("API returned non-200 status: " + response.statusCode());
+                    }
+                    return response.body();
+                })
+                .thenApply(jsonBody -> {
+                    try {
+                        _logger.Debug("Parsing JSON response from " + _downloadUrl);
+                        return  JsonParser.parseString(jsonBody);
+                    } catch (JsonSyntaxException e) {
+                        _logger.Error("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
+                        throw new RuntimeException("JSON parsing error", e);
+                    }
+                })
+                .exceptionally(ex -> {
+                    _logger.Error("Error during HTTP GET request to " + _downloadUrl + ": " + ex.getMessage());
+                    return null; // Or throw a custom exception
+                });
+
+        // Holder for the latest version retrieved from the response
+        final String[] versionHolder = new String[1];
+        result.thenAccept(jsonElement -> {
+                    if (jsonElement != null) {
+                        getServer().getScheduler().runTask(this, () -> {
+                            if (!jsonElement.isJsonObject()) {
+                                _logger.Warn("Expected a JSON object from " + _downloadUrl + ", but got: " + jsonElement);
+                                return;
+                            }
+                            JsonObject jsonObject = jsonElement.getAsJsonObject();
+                            versionHolder[0] = jsonObject.get("tag_name").getAsString();
+                        });
+                    } else {
+                        getServer().getScheduler().runTask(this, () -> {
+                            _logger.Warn("Failed to retrieve the latest version information from " + _downloadUrl);
+                        });
+                    }
+                })
+                .exceptionally(e -> {
+                    getServer().getScheduler().runTask(this, () -> {
+                        _logger.Error("An error occurred while checking for updates: " + e.getMessage());
+                    });
+                    return null;
+                });
+
+        // Compare the current version with the latest version
+        String version =  versionHolder[0];
         _logger.Debug("Current version: " + _version);
         _logger.Debug("Latest version: " + version);
         return version.equalsIgnoreCase(_version);
