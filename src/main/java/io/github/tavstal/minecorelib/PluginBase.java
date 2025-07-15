@@ -211,7 +211,7 @@ public abstract class PluginBase extends JavaPlugin {
         String version =  versionHolder[0];
         _logger.Debug("Current version: " + _version);
         _logger.Debug("Latest version: " + version);
-        return version.equalsIgnoreCase(_version);
+        return _version.equalsIgnoreCase(version);
     }
 
     /**
