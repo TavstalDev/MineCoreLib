@@ -2,8 +2,18 @@ plugins {
     id("java")
 }
 
-group = "io.github.tavstal"
-version = "1.0"
+val javaVersion: String by project
+val junitVersion: String by project
+val paperApiVersion: String by project
+val gsonVersion: String by project
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+        sourceCompatibility = JavaVersion.toVersion(javaVersion)
+        targetCompatibility = JavaVersion.toVersion(javaVersion)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -17,14 +27,12 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation(platform("org.junit:junit-bom:${junitVersion}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     // PaperMC dependency
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    // HTTP Client
-    compileOnly("org.apache.httpcomponents:httpclient:4.5.14")
-    // HikariCP / Database Connection Pool
-    compileOnly("com.zaxxer:HikariCP:4.0.3")
+    compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
+    // Gson dependency
+    implementation("com.google.code.gson:gson:${gsonVersion}")
 }
 
 tasks.test {
