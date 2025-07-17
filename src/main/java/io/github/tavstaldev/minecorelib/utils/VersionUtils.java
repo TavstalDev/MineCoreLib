@@ -26,11 +26,10 @@ public class VersionUtils {
             version = (String) method.invoke(null);
         } catch (Exception e) {
             // Fallback for older versions
-            System.out.println(Bukkit.getServer().getClass().getPackage().getName());
-            version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            System.out.println(version);
-            version = version.replace("_", ".").replaceAll("[A-Z]|[a-z]", "");
-            System.out.println(version);
+            version = Bukkit.getServer().getClass().getPackage().getName()
+                    .split("\\.")[3]
+                    .replace("_", ".")
+                    .replaceAll("[A-Z]|[a-z]", "");
         }
         _version = version;
         return version;
