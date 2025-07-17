@@ -1,6 +1,6 @@
-package io.github.tavstal.minecorelib.core;
+package io.github.tavstaldev.minecorelib.core;
 
-import io.github.tavstal.minecorelib.PluginBase;
+import io.github.tavstaldev.minecorelib.PluginBase;
 import org.bukkit.entity.Player;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;

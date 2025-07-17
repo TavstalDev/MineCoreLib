@@ -1,6 +1,6 @@
-package io.github.tavstal.minecorelib.core;
+package io.github.tavstaldev.minecorelib.core;
 
-import io.github.tavstal.minecorelib.PluginBase;
+import io.github.tavstaldev.minecorelib.PluginBase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
@@ -54,7 +54,7 @@ public class PluginLogger {
      * @return A new PluginLogger instance with the specified module.
      */
     public PluginLogger WithModule(@NotNull Class<?> module) {
-        return new PluginLogger(_plugin,module.getName().replace("io.github.tavstal.", ""));
+        return new PluginLogger(_plugin,module.getName().replace("io.github.tavstaldev.", ""));
     }
 
     /**

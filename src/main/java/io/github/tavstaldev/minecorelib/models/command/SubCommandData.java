@@ -1,6 +1,6 @@
-package io.github.tavstal.minecorelib.models;
+package io.github.tavstaldev.minecorelib.models.command;
 
-import io.github.tavstal.minecorelib.PluginBase;
+import io.github.tavstaldev.minecorelib.PluginBase;
 import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;

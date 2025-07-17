@@ -1,4 +1,4 @@
-package io.github.tavstal.minecorelib.utils;
+package io.github.tavstaldev.minecorelib.utils;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;

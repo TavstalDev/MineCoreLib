@@ -1,7 +1,7 @@
-package io.github.tavstal.minecorelib.models;
+package io.github.tavstaldev.minecorelib.models.config;
 
-import io.github.tavstal.minecorelib.PluginBase;
-import io.github.tavstal.minecorelib.core.PluginLogger;
+import io.github.tavstaldev.minecorelib.PluginBase;
+import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;

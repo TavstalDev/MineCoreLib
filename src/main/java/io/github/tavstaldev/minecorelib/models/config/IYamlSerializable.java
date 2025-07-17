@@ -1,4 +1,4 @@
-package io.github.tavstal.minecorelib.models;
+package io.github.tavstaldev.minecorelib.models.config;
 
 public interface IYamlSerializable {
 

@@ -1,6 +1,6 @@
-package io.github.tavstal.minecorelib.utils;
+package io.github.tavstaldev.minecorelib.utils;
 
-import io.github.tavstal.minecorelib.core.PluginLogger;
+import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
