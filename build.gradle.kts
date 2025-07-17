@@ -3,7 +3,6 @@ plugins {
 }
 
 val javaVersion: String by project
-val junitVersion: String by project
 val paperApiVersion: String by project
 val gsonVersion: String by project
 
@@ -27,12 +26,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:${junitVersion}"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    // PaperMC dependency
-    compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
     // Gson dependency
     implementation("com.google.code.gson:gson:${gsonVersion}")
+
+    // PaperMC dependency
+    compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
 }
 
 tasks.test {
