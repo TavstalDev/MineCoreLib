@@ -24,8 +24,8 @@ import java.util.Objects;
  *
  */
 public abstract class PluginBase extends JavaPlugin {
-    private final PluginLogger _logger;
-    private final PluginTranslator _translator;
+    protected final PluginLogger _logger;
+    protected final PluginTranslator _translator;
     private final HttpClient _httpClient;
     private final Gson _gson;
     private final String _projectName;

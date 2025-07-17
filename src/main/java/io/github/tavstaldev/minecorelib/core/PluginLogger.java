@@ -54,7 +54,7 @@ public class PluginLogger {
      * @return A new PluginLogger instance with the specified module.
      */
     public PluginLogger WithModule(@NotNull Class<?> module) {
-        return new PluginLogger(_plugin,module.getName().replace("io.github.tavstaldev.", ""));
+        return new PluginLogger(_plugin,module.getSimpleName());
     }
 
     /**
@@ -64,10 +64,11 @@ public class PluginLogger {
      * @param text  The message to log.
      */
     private void Log(@NotNull Level level, @NotNull String text) {
+        String moduleText = "";
         if (_module != null)
-            _logger.log(level, String.format("[%s] %s", _module, text));
-        else
-            _logger.log(level, text);
+            moduleText = String.format(" [%s]", _module);
+
+        _logger.log(level, String.format("[%s]%s: %s", _plugin.getProjectName(), moduleText, text));
     }
 
     /**
