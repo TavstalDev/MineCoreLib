@@ -72,6 +72,22 @@ public class PluginLogger {
     }
 
     /**
+     * Logs a message with the specified severity level, module name, and color.
+     * This method allows for rich text logging by including a color code in the log message.
+     *
+     * @param level The severity level of the log message.
+     * @param text  The message to log.
+     * @param color The color code to prepend to the log message for rich text formatting.
+     */
+    private void LogRich(@NotNull Level level, @NotNull String text, @NotNull String color) {
+        String moduleText = "";
+        if (_module != null)
+            moduleText = String.format(" [%s]", _module);
+
+        _logger.log(level, String.format("%s%s: %s\u001B[0m", color, moduleText, text));
+    }
+
+    /**
      * Converts the given object to a string representation.
      *
      * @param text The object to convert.
@@ -91,31 +107,21 @@ public class PluginLogger {
      * Logs an informational message.
      *
      * @param text The message to log.
-     * @deprecated Use {@link #Info(Object)} instead.
-     */
-    @Deprecated
-    public void LogInfo(String text) {
-        Log(Level.INFO, text);
-    }
-
-    /**
-     * Logs an informational message.
-     *
-     * @param text The message to log.
      */
     public void Info(@NotNull Object text) {
         Log(Level.INFO, GetString(text));
     }
 
     /**
-     * Logs a warning message.
+     * Logs a success message with a green color code.
+     * This method uses rich text formatting to prepend a green color code
+     * to the log message, indicating a successful operation.
      *
-     * @param text The message to log.
-     * @deprecated Use {@link #Warn(Object)} instead.
+     * @param text The message to log, which can be any object.
+     *             The object will be converted to a string representation.
      */
-    @Deprecated
-    public void LogWarning(String text) {
-        Log(Level.WARNING, text);
+    public void Ok(@NotNull Object text) {
+        LogRich(Level.INFO, GetString(text), "\u001B[32m");
     }
 
     /**
@@ -131,32 +137,9 @@ public class PluginLogger {
      * Logs an error message.
      *
      * @param text The message to log.
-     * @deprecated Use {@link #Error(Object)} instead.
-     */
-    @Deprecated
-    public void LogError(Object text) {
-        Log(Level.SEVERE, GetString(text));
-    }
-
-    /**
-     * Logs an error message.
-     *
-     * @param text The message to log.
      */
     public void Error(@NotNull Object text) {
         Log(Level.SEVERE, GetString(text));
-    }
-
-    /**
-     * Logs a debug message if debugging is enabled in the configuration.
-     *
-     * @param text The message to log.
-     * @deprecated Use {@link #Debug(Object)} instead.
-     */
-    @Deprecated
-    public void LogDebug(Object text) {
-        if (_plugin.getConfig().getBoolean("debug"))
-            Log(Level.INFO, GetString(text));
     }
 
     /**
