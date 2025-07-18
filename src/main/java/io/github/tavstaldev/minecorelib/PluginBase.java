@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Abstract base class for a Minecraft plugin.
@@ -147,7 +148,7 @@ public abstract class PluginBase extends JavaPlugin {
      *
      * @return {@code true} if the plugin is up-to-date, {@code false} otherwise.
      */
-    public boolean isUpToDate() {
+    public CompletableFuture<Boolean> isUpToDate() {
         _logger.Debug("Checking for updates...");
         // Build the HTTP request to fetch the latest version information
         HttpRequest request = HttpRequest.newBuilder()
@@ -158,7 +159,7 @@ public abstract class PluginBase extends JavaPlugin {
                 .build();
 
         // Send the request asynchronously and process the response
-        var result = _httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        return _httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     // Check HTTP status code
                     if (response.statusCode() != 200) {
@@ -170,47 +171,39 @@ public abstract class PluginBase extends JavaPlugin {
                 .thenApply(jsonBody -> {
                     try {
                         _logger.Debug("Parsing JSON response from " + _downloadUrl);
-                        return  JsonParser.parseString(jsonBody);
+                        return JsonParser.parseString(jsonBody);
                     } catch (JsonSyntaxException e) {
                         _logger.Error("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
                         throw new RuntimeException("JSON parsing error", e);
                     }
                 })
-                .exceptionally(ex -> {
-                    _logger.Error("Error during HTTP GET request to " + _downloadUrl + ": " + ex.getMessage());
-                    return null; // Or throw a custom exception
-                });
-
-        // Holder for the latest version retrieved from the response
-        final String[] versionHolder = new String[1];
-        result.thenAccept(jsonElement -> {
-                    if (jsonElement != null) {
-                        getServer().getScheduler().runTask(this, () -> {
-                            if (!jsonElement.isJsonObject()) {
-                                _logger.Warn("Expected a JSON object from " + _downloadUrl + ", but got: " + jsonElement);
-                                return;
-                            }
-                            JsonObject jsonObject = jsonElement.getAsJsonObject();
-                            versionHolder[0] = jsonObject.get("tag_name").getAsString();
-                        });
-                    } else {
-                        getServer().getScheduler().runTask(this, () -> {
-                            _logger.Warn("Failed to retrieve the latest version information from " + _downloadUrl);
-                        });
+                .thenApply(jsonElement -> {
+                    if (jsonElement == null) {
+                        _logger.Warn("Failed to retrieve the latest version information from " + _downloadUrl);
+                        return false; // Treat as not up-to-date or an error occurred
                     }
-                })
-                .exceptionally(e -> {
-                    getServer().getScheduler().runTask(this, () -> {
-                        _logger.Error("An error occurred while checking for updates: " + e.getMessage());
-                    });
-                    return null;
-                });
 
-        // Compare the current version with the latest version
-        String version =  versionHolder[0];
-        _logger.Debug("Current version: " + _version);
-        _logger.Debug("Latest version: " + version);
-        return _version.equalsIgnoreCase(version) || _version.equalsIgnoreCase("v" + version);
+                    if (!jsonElement.isJsonObject()) {
+                        _logger.Warn("Expected a JSON object from " + _downloadUrl + ", but got: " + jsonElement);
+                        return false; // Treat as not up-to-date or an error occurred
+                    }
+
+                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    String latestVersion = jsonObject.get("tag_name").getAsString();
+
+                    _logger.Debug("Current version: " + _version);
+                    _logger.Debug("Latest version: " + latestVersion);
+
+                    return _version.equalsIgnoreCase(latestVersion) || ("v" + _version).equalsIgnoreCase(latestVersion);
+                })
+                .exceptionally(ex -> {
+                    _logger.Error("Error during update check for " + _downloadUrl + ": " + ex.getMessage());
+                    // You might want to log this on the main thread if your logger isn't thread-safe
+                    getServer().getScheduler().runTask(this, () -> {
+                        _logger.Error("An error occurred while checking for updates: " + ex.getMessage());
+                    });
+                    return false; // If an error occurs, assume not up-to-date or handle as appropriate
+                });
     }
 
     /**
