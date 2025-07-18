@@ -198,7 +198,12 @@ public class ItemMetaSerializer {
         try {
             String materialString = (String) itemMap.get("material");
             Material material = Material.getMaterial(materialString);  // Convert material string to Material enum
-            int amount = (int) itemMap.get("amount");  // Get the item amount
+            int amount;
+            if (itemMap.containsKey("amount")) {
+                amount = (int) itemMap.get("amount");  // Get the amount of the item
+            } else {
+                amount = 1;  // Default amount if not specified
+            }
 
             if (material != null) {
                 ItemStack item = new ItemStack(material, amount);
@@ -225,7 +230,13 @@ public class ItemMetaSerializer {
 
                 // Durability
                 if (itemMap.containsKey("durability")) {
-                    ((Damageable) meta).setDamage((int) itemMap.get("durability"));
+                    if (meta instanceof Damageable damageableMeta) {
+                        int durability = 0;
+                        try {
+                            durability = (int) itemMap.get("durability");  // Get the durability of the item
+                        } catch (ClassCastException ignored){}
+                        damageableMeta.setDamage(durability);
+                    }
                 }
 
                 // customModelData
