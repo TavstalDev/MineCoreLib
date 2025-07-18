@@ -3,6 +3,7 @@ package io.github.tavstaldev.minecorelib.models.item;
 import io.github.tavstaldev.minecorelib.utils.ColorUtils;
 import io.github.tavstaldev.minecorelib.utils.ItemMetaSerializer;
 import io.github.tavstaldev.minecorelib.utils.TypeUtils;
+import io.github.tavstaldev.minecorelib.utils.VersionUtils;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
@@ -36,10 +37,18 @@ public class PotionMetaHandler {
             return;
 
         // Custom Potion Name
-        // TODO: Find out what version this was added in, and if it is still supported
-        /*if (potionMeta.hasCustomPotionName())
-                    itemData.put("customPotionName", potionMeta.getCustomPotionName());
-         */
+        if (VersionUtils.isAtLeast(1, 21, 4)) {
+            if (potionMeta.hasCustomPotionName()) {
+                itemData.put("customPotionName", potionMeta.getCustomPotionName());
+            }
+        } else {
+            //noinspection removal
+            if (potionMeta.hasCustomName()) {
+                //noinspection removal
+                itemData.put("customPotionName", potionMeta.getCustomName());
+            }
+        }
+
 
         // Color
         if (potionMeta.hasColor() && potionMeta.getColor() != null) {
@@ -77,7 +86,13 @@ public class PotionMetaHandler {
 
         // Custom Potion Name
         if (itemData.containsKey("customPotionName")) {
-            potionMeta.setCustomPotionName((String) itemData.get("customPotionName"));
+            String customPotionName = (String)itemData.get("customPotionName");
+            if (VersionUtils.isAtLeast(1, 21, 4)) {
+                potionMeta.setCustomPotionName(customPotionName);
+            } else {
+                //noinspection removal
+                potionMeta.setCustomName(customPotionName);
+            }
         }
 
         // Color
