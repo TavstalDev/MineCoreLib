@@ -68,7 +68,7 @@ public class PluginLogger {
         if (_module != null)
             moduleText = String.format(" [%s]", _module);
 
-        _logger.log(level, String.format("[%s]%s: %s", _plugin.getProjectName(), moduleText, text));
+        _logger.log(level, String.format("%s: %s", moduleText, text));
     }
 
     /**
