@@ -211,18 +211,28 @@ public class ItemMetaSerializer {
 
                 // if there is no name, then it does not have metadata.
                 if (itemMap.containsKey("name")) {
-                    meta.displayName(GsonComponentSerializer.gson().deserialize((String) itemMap.get("name")));
+                    var rawName = (String) itemMap.get("name");
+                    if (rawName.contains("{") && rawName.contains("}")) {
+                        meta.displayName(GsonComponentSerializer.gson().deserialize(rawName));
+                    } else {
+                        meta.displayName(ChatUtils.translateColors(rawName, true));
+                    }
                 }
 
                 // Lore
                 if (itemMap.containsKey("lore")) {
                     var loreData = itemMap.get("lore");
                     if (loreData instanceof List) {
-                        //noinspection unchecked
-                        List<String> lore = (List<String>) loreData;
+                        List<String> rawRoles = TypeUtils.castAsList(loreData, null);
                         List<Component> loreList = new ArrayList<>();
-                        for (String line : lore) {
-                            loreList.add(GsonComponentSerializer.gson().deserialize(line));
+                        if (rawRoles != null) {
+                            for (String line : rawRoles) {
+                                if (line.contains("{") && line.contains("}")) {
+                                    meta.displayName(GsonComponentSerializer.gson().deserialize(line));
+                                } else {
+                                    meta.displayName(ChatUtils.translateColors(line, true));
+                                }
+                            }
                         }
                         meta.lore(loreList);
                     }
@@ -337,7 +347,7 @@ public class ItemMetaSerializer {
                 itemResult = item;
             }
         } catch (Exception ex) {
-            _logger.Error("An error occurred while deserializing items: " + ex.getMessage());
+            _logger.Error("An error occurred while deserializing items: " + ex);
         }
         return itemResult;
     }
