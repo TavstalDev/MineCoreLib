@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,37 @@ import java.util.Map;
  * of a potion into a storable format and reconstruct them from the stored data.
  */
 public class PotionMetaHandler {
+    private static boolean _initialized;
+    private static Method hasCustomNameMethod;
+    private static Method getCustomNameMethod;
+    private static Method setCustomNameMethod;
+    private static boolean doesCustomNameMethodWork = true;
+
+    /**
+     * Ensures that the reflection methods for handling custom potion names are initialized.
+     * Depending on the server version, it uses different method names for compatibility.
+     */
+    private static void checkMethods() {
+        if (_initialized) return;
+
+        try {
+            boolean isNewVersion = VersionUtils.isAtLeast(1, 21, 4);
+            if (isNewVersion) {
+                hasCustomNameMethod = PotionMeta.class.getMethod("hasCustomPotionName");
+                getCustomNameMethod = PotionMeta.class.getMethod("getCustomPotionName");
+                setCustomNameMethod = PotionMeta.class.getMethod("setCustomPotionName", String.class);
+            }
+            else {
+                hasCustomNameMethod = PotionMeta.class.getMethod("hasCustomName");
+                getCustomNameMethod = PotionMeta.class.getMethod("getCustomName");
+                setCustomNameMethod = PotionMeta.class.getMethod("setCustomName", String.class);
+            }
+        } catch (NoSuchMethodException ignored) {
+            doesCustomNameMethodWork = false;
+        }
+
+        _initialized = true;
+    }
 
     /**
      * Serializes the metadata of a {@link PotionMeta} into a map.
@@ -36,19 +68,18 @@ public class PotionMetaHandler {
         if (!(meta instanceof PotionMeta potionMeta))
             return;
 
+        // Ensure methods are initialized
+        checkMethods();
+
         // Custom Potion Name
-        if (VersionUtils.isAtLeast(1, 21, 4)) {
-            if (potionMeta.hasCustomPotionName()) {
-                itemData.put("customPotionName", potionMeta.getCustomPotionName());
-            }
-        } else {
-            //noinspection removal
-            if (potionMeta.hasCustomName()) {
-                //noinspection removal
-                itemData.put("customPotionName", potionMeta.getCustomName());
+        if (doesCustomNameMethodWork) {
+            if ((boolean) hasCustomNameMethod.invoke(potionMeta)) {
+                String customPotionName = (String) getCustomNameMethod.invoke(potionMeta);
+                if (customPotionName != null && !customPotionName.isEmpty()) {
+                    itemData.put("customPotionName", customPotionName);
+                }
             }
         }
-
 
         // Color
         if (potionMeta.hasColor() && potionMeta.getColor() != null) {
@@ -84,15 +115,13 @@ public class PotionMetaHandler {
         if (!(meta instanceof PotionMeta potionMeta))
             return;
 
+        // Ensure methods are initialized
+        checkMethods();
+
         // Custom Potion Name
-        if (itemData.containsKey("customPotionName")) {
+        if (itemData.containsKey("customPotionName") && doesCustomNameMethodWork) {
             String customPotionName = (String)itemData.get("customPotionName");
-            if (VersionUtils.isAtLeast(1, 21, 4)) {
-                potionMeta.setCustomPotionName(customPotionName);
-            } else {
-                //noinspection removal
-                potionMeta.setCustomName(customPotionName);
-            }
+            setCustomNameMethod.invoke(potionMeta, customPotionName);
         }
 
         // Color
