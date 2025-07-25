@@ -57,6 +57,10 @@ public class SubCommandData {
                 args.put(key, "");
                 continue;
             }
+            if (param instanceof String stringParam && stringParam.isEmpty()) {
+                args.put(key, param);
+                continue;
+            }
             args.put(key, plugin.getTranslator().Localize(player, param.toString()));
         }
 
