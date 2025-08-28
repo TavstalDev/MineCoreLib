@@ -71,7 +71,6 @@ public class PluginTranslator {
                     } catch (IOException ex) {
                         _logger.Warn(String.format("Failed to create lang file for locale '%s'.", locale));
                         _logger.Error(ex.getMessage());
-                        return false;
                     }
                 }
             } catch (IOException ex) {
@@ -97,13 +96,13 @@ public class PluginTranslator {
                 catch (FileNotFoundException ex)
                 {
                     _logger.Error(String.format("Failed to get localization file. Path: %s", entry));
-                    return false;
+                    continue;
                 }
                 catch (Exception ex)
                 {
                     _logger.Warn("Unknown error happened while reading locale file.");
                     _logger.Error(ex.getMessage());
-                    return false;
+                    continue;
                 }
 
                 _logger.Debug("Loading yaml file...");
@@ -115,7 +114,7 @@ public class PluginTranslator {
                 if (!(yamlObject instanceof Map))
                 {
                     _logger.Error("Failed to cast the yamlObject after reading the localization.");
-                    return false;
+                    continue;
                 }
 
                 _logger.Debug("Casting yamlObject to Map...");
@@ -127,7 +126,7 @@ public class PluginTranslator {
                     // TODO: Test it
                     Map<String, Object> updatedLocale = updateLocalization(lang);
                     if (updatedLocale == null)
-                        return true;
+                        continue;
 
                     _localization.put(lang, updatedLocale);
                     Path filePath = Paths.get(dirPath.toString(), lang + ".yml");
