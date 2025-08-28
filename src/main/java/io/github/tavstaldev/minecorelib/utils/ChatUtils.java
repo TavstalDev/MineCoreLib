@@ -2,6 +2,7 @@ package io.github.tavstaldev.minecorelib.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +36,7 @@ public class ChatUtils {
                     .replacement(dirElem)
                     .build());
         }
-        return result;
+        return result.decoration(TextDecoration.ITALIC, false);
     }
 
     /**
@@ -46,11 +47,11 @@ public class ChatUtils {
      */
     public static Component translateColors(@NotNull String message, boolean checkLegacy) {
         if (!checkLegacy)
-            return MiniMessage.miniMessage().deserialize(message);
+            return MiniMessage.miniMessage().deserialize(message).decoration(TextDecoration.ITALIC, false);
 
         // Convert '&' to '§' first (since ChatColor.stripColor requires '§')
         String legacyColor = translateAlternateColorCodes(message);
-        return MiniMessage.miniMessage().deserialize(legacyToMiniMessage(legacyColor));
+        return MiniMessage.miniMessage().deserialize(legacyToMiniMessage(legacyColor)).decoration(TextDecoration.ITALIC, false);
     }
 
     /**
