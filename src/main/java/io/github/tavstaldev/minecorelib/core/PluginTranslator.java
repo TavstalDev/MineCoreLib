@@ -5,7 +5,10 @@ import org.bukkit.entity.Player;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
@@ -106,10 +109,14 @@ public class PluginTranslator {
                 }
 
                 _logger.Debug("Loading yaml file...");
-                DumperOptions options = new DumperOptions();
-                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
-                options.setIndent(2);
-                Yaml yaml = new Yaml(options);
+                DumperOptions dumperOptions = new DumperOptions();
+                dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
+                dumperOptions.setIndent(2);
+                LoaderOptions loaderOptions = new LoaderOptions();
+                loaderOptions.setMaxAliasesForCollections(200); // Should be enough
+                Constructor constructor = new Constructor(loaderOptions);
+                Representer representer = new Representer(dumperOptions);
+                Yaml yaml = new Yaml(constructor, representer);
                 Object yamlObject = yaml.load(inputStream);
                 if (!(yamlObject instanceof Map))
                 {
