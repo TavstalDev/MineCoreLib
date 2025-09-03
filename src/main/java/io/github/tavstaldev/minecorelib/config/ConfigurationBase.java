@@ -24,8 +24,10 @@ public abstract class ConfigurationBase extends YamlConfiguration {
                 if (resourcePath != null) {
                     var resourceStream = plugin.getResource(relativePath);
                     if (resourceStream == null) {
-                        //noinspection ResultOfMethodCallIgnored
-                        _file.mkdirs();
+                        if (!_file.isDirectory()) {
+                            //noinspection ResultOfMethodCallIgnored
+                            _file.getParentFile().mkdirs();
+                        }
                         //noinspection ResultOfMethodCallIgnored
                         _file.createNewFile();
                     }
@@ -34,8 +36,10 @@ public abstract class ConfigurationBase extends YamlConfiguration {
                     }
                 }
                 else {
-                    //noinspection ResultOfMethodCallIgnored
-                    _file.mkdirs();
+                    if (!_file.isDirectory()) {
+                        //noinspection ResultOfMethodCallIgnored
+                        _file.getParentFile().mkdirs();
+                    }
                     //noinspection ResultOfMethodCallIgnored
                     _file.createNewFile();
                 }
