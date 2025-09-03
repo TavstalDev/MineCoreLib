@@ -148,7 +148,11 @@ public class PluginLogger {
      * @param text The message to log.
      */
     public void Debug(@NotNull Object text) {
-        if (_plugin.getConfig().getBoolean("debug"))
+        // noinspection ConstantConditions
+        if (_plugin.getConfig() == null)
+            return;
+
+        if (_plugin.getConfig().getBoolean("debug", false))
             Log(Level.INFO, GetString(text));
     }
 }

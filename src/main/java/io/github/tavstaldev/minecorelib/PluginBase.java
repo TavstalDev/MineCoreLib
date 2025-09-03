@@ -1,6 +1,7 @@
 package io.github.tavstaldev.minecorelib;
 
 import com.google.gson.*;
+import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
@@ -26,33 +27,14 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class PluginBase extends JavaPlugin {
     protected final PluginLogger _logger;
-    protected final PluginTranslator _translator;
+    protected ConfigurationBase _config;
+    protected PluginTranslator _translator;
     private final HttpClient _httpClient;
-    private final Gson _gson;
-    private final String _projectName;
-    private final String _version;
-    private final String _author;
     private final String _downloadUrl;
 
-    /**
-     * Constructs a new PluginBase instance.
-     *
-     * @param projectName The name of the project.
-     * @param version The version of the plugin.
-     * @param author The author of the plugin.
-     * @param downloadUrl The URL to check for updates.
-     * @param locales The supported locales for translation.
-     */
-    public PluginBase(String projectName, String version, String author, String downloadUrl, String[] locales) {
-        _projectName = projectName;
-        _version = version;
-        _author = author;
+    public PluginBase(String downloadUrl) {
         _downloadUrl = downloadUrl;
         _logger = new PluginLogger(this);
-        _translator = new PluginTranslator(this, locales);
-
-        _gson = new GsonBuilder().setPrettyPrinting().create();
-
         _httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2) // Prefer HTTP/2 if available
                 .followRedirects(HttpClient.Redirect.NORMAL) // Follow redirects
@@ -70,6 +52,15 @@ public abstract class PluginBase extends JavaPlugin {
     }
 
     /**
+     * Returns the plugin's configuration instance.
+     *
+     * @return the {@link ConfigurationBase} object representing the plugin configuration.
+     */
+    public @NotNull ConfigurationBase getConfig() {
+        return _config;
+    }
+
+    /**
      * Gets the translator for the plugin.
      *
      * @return The translator.
@@ -84,7 +75,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return The project name.
      */
     public @NotNull String getProjectName() {
-        return _projectName;
+        return this.getPluginMeta().getName();
     }
 
     /**
@@ -93,16 +84,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return The version.
      */
     public @NotNull String getVersion() {
-        return _version;
-    }
-
-    /**
-     * Gets the author of the plugin.
-     *
-     * @return The author.
-     */
-    public @NotNull String getAuthor() {
-        return _author;
+        return this.getPluginMeta().getVersion();
     }
 
     /**
@@ -127,7 +109,7 @@ public abstract class PluginBase extends JavaPlugin {
      * Reloads the plugin configuration and localizations.
      */
     public void reload() {
-        _logger.Info(String.format("Reloading %s...", _projectName));
+        _logger.Info(String.format("Reloading %s...", getProjectName()));
         _logger.Debug("Reloading localizations...");
         if (_translator.Load())
             _logger.Debug("Localizations reloaded.");
@@ -190,11 +172,11 @@ public abstract class PluginBase extends JavaPlugin {
 
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     String latestVersion = jsonObject.get("tag_name").getAsString();
-
-                    _logger.Debug("Current version: " + _version);
+                    String currentVersion = getVersion();
+                    _logger.Debug("Current version: " + currentVersion);
                     _logger.Debug("Latest version: " + latestVersion);
 
-                    return _version.equalsIgnoreCase(latestVersion) || ("v" + _version).equalsIgnoreCase(latestVersion);
+                    return currentVersion.equalsIgnoreCase(latestVersion) || ("v" + currentVersion).equalsIgnoreCase(latestVersion);
                 })
                 .exceptionally(ex -> {
                     _logger.Error("Error during update check for " + _downloadUrl + ": " + ex.getMessage());

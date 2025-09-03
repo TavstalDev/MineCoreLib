@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     // Gson dependency
-    implementation("com.google.code.gson:gson:${gsonVersion}")
+    //implementation("com.google.code.gson:gson:${gsonVersion}")
 
     // PaperMC dependency
     compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
