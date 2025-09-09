@@ -145,7 +145,7 @@ public abstract class PluginBase extends JavaPlugin {
                 .thenApply(response -> {
                     // Check HTTP status code
                     if (response.statusCode() != 200) {
-                        _logger.Warn("GET request failed for " + _downloadUrl + ". Status: " + response.statusCode());
+                        _logger.Debug("GET request failed for " + _downloadUrl + ". Status: " + response.statusCode());
                         throw new RuntimeException("API returned non-200 status: " + response.statusCode());
                     }
                     return response.body();
@@ -155,7 +155,7 @@ public abstract class PluginBase extends JavaPlugin {
                         _logger.Debug("Parsing JSON response from " + _downloadUrl);
                         return JsonParser.parseString(jsonBody);
                     } catch (JsonSyntaxException e) {
-                        _logger.Error("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
+                        _logger.Debug("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
                         throw new RuntimeException("JSON parsing error", e);
                     }
                 })
@@ -179,11 +179,10 @@ public abstract class PluginBase extends JavaPlugin {
                     return currentVersion.equalsIgnoreCase(latestVersion) || ("v" + currentVersion).equalsIgnoreCase(latestVersion);
                 })
                 .exceptionally(ex -> {
-                    _logger.Error("Error during update check for " + _downloadUrl + ": " + ex.getMessage());
-                    // You might want to log this on the main thread if your logger isn't thread-safe
-                    getServer().getScheduler().runTask(this, () -> {
+                    _logger.Error("Error during update check: " + ex.getMessage());
+                    /*getServer().getScheduler().runTask(this, () -> {
                         _logger.Error("An error occurred while checking for updates: " + ex.getMessage());
-                    });
+                    });*/
                     return false; // If an error occurs, assume not up-to-date or handle as appropriate
                 });
     }
