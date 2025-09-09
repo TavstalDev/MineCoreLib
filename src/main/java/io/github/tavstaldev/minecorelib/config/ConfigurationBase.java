@@ -82,6 +82,27 @@ public abstract class ConfigurationBase extends YamlConfiguration {
         }
     }
 
+    public <T> T resolveGet(String path, T value) {
+        // Get the existing value from the specified path
+        try {
+            @SuppressWarnings("unchecked") T local = (T) this.get(path);
+
+            // If the existing value is null, or if the path doesn't contain a value,
+            // set the new value and return it.
+            if (local == null) {
+                this.set(path, value);
+                return (T) value;
+            }
+
+            // Otherwise, return the existing value.
+            return local;
+        }
+        catch (Exception ignored) {
+            //this.set(path, value);
+            return value;
+        }
+    }
+
     public void resolveComment(String path, List<String> comments) {
         if (this.getComments(path).isEmpty())
             this.setComments(path, comments);
