@@ -1,5 +1,6 @@
 package io.github.tavstaldev.minecorelib.utils;
 
+import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,16 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiUtils {
-    /**
-     * Creates a NamespacedKey for marking items as potentially duped.
-     *
-     * @param plugin The plugin instance.
-     * @return The NamespacedKey for the "ProbablyDuped" tag.
-     */
-    public static NamespacedKey DupeKey(JavaPlugin plugin) {
-        return new NamespacedKey(plugin, "ProbablyDuped");
-    }
-
     /**
      * Creates an ItemStack with the specified material and display name.
      *
@@ -107,7 +98,7 @@ public class GuiUtils {
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, nbtValue);
         }
 
-        meta.getPersistentDataContainer().set(DupeKey(plugin), PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(GuiDupeDetector.getDupeProtectedKey(), PersistentDataType.BOOLEAN, true);
 
         // Apply the meta to the item
         item.setItemMeta(meta);
@@ -164,16 +155,5 @@ public class GuiUtils {
 
         String nbtValue = container.get(key, PersistentDataType.STRING);
         return value.equals(nbtValue);
-    }
-
-    /**
-     * Checks if the given ItemStack is duped.
-     *
-     * @param item   The ItemStack to check.
-     * @param plugin The plugin to check for.
-     * @return true if the ItemStack is duped, false otherwise.
-     */
-    public static boolean isDuped(@NotNull ItemStack item, @NotNull JavaPlugin plugin) {
-        return hasNBT(item, DupeKey(plugin), "true");
     }
 }

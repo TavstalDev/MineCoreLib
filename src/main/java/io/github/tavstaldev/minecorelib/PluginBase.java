@@ -2,6 +2,7 @@ package io.github.tavstaldev.minecorelib;
 
 import com.google.gson.*;
 import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
+import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
@@ -31,8 +32,16 @@ public abstract class PluginBase extends JavaPlugin {
     protected PluginTranslator _translator;
     private final HttpClient _httpClient;
     private final String _downloadUrl;
+    private final boolean _hasGui;
 
-    public PluginBase(String downloadUrl) {
+    /**
+     * Constructs a new instance of the PluginBase class.
+     *
+     * @param hasGui      Indicates whether the plugin has a GUI.
+     * @param downloadUrl The URL used for downloading updates.
+     */
+    public PluginBase(boolean hasGui, String downloadUrl) {
+        _hasGui = hasGui;
         _downloadUrl = downloadUrl;
         _logger = new PluginLogger(this);
         _httpClient = HttpClient.newBuilder()
@@ -106,18 +115,25 @@ public abstract class PluginBase extends JavaPlugin {
     public @NotNull HttpClient getHttpClient() { return _httpClient; }
 
     /**
-     * Reloads the plugin configuration and localizations.
+     * Called when the plugin is enabled.
+     * If the plugin has a GUI, registers the plugin to the GUI dupe detector.
      */
-    public void reload() {
-        _logger.Info(String.format("Reloading %s...", getProjectName()));
-        _logger.Debug("Reloading localizations...");
-        if (_translator.Load())
-            _logger.Debug("Localizations reloaded.");
-        else
-            _logger.Error("Failed to reload localizations.");
-        _logger.Debug("Reloading configuration...");
-        this.reloadConfig();
-        _logger.Debug("Configuration reloaded.");
+    @Override
+    public void onEnable() {
+        if (_hasGui) {
+            GuiDupeDetector.register(this);
+        }
+    }
+
+    /**
+     * Called when the plugin is disabled.
+     * If the plugin has a GUI, unregisters the plugin from the GUI dupe detector.
+     */
+    @Override
+    public void onDisable() {
+        if (_hasGui) {
+            GuiDupeDetector.unregister(this);
+        }
     }
 
     /**
