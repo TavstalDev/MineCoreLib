@@ -5,6 +5,8 @@ import io.github.tavstaldev.minecorelib.utils.TypeUtils;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -51,11 +53,41 @@ public class EnchantmentMetaHandler {
         if (!itemData.containsKey("enchantments"))
             return;
 
-        Map<String, Integer> enchantments = TypeUtils.castAsMap(itemData.get("enchantments"), null);
+        var data = itemData.get("enchantments");
+
+        if (data instanceof ConfigurationSection section) {
+            Map<String, Object> enchantments = section.getValues(false);
+            if (enchantments.isEmpty())
+                return;
+
+            for (var entry : enchantments.entrySet()) {
+                NamespacedKey namespacedKey;
+                if (!entry.getKey().contains(":"))
+                    namespacedKey = NamespacedKey.minecraft(entry.getKey().toLowerCase());
+                else
+                    namespacedKey = NamespacedKey.fromString(entry.getKey());
+
+                if (namespacedKey == null)
+                    continue;
+
+                Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(namespacedKey);
+                if (enchantment == null)
+                    continue;
+
+                meta.addEnchant(enchantment, (Integer)entry.getValue(), true);
+            }
+            return;
+        }
+
+        Map<String, Integer> enchantments = TypeUtils.castAsMap(data, null);
         if (enchantments == null || enchantments.isEmpty())
             return;
         for (var entry : enchantments.entrySet()) {
-            var namespacedKey = NamespacedKey.fromString(entry.getKey());
+            NamespacedKey namespacedKey;
+            if (!entry.getKey().contains(":"))
+                namespacedKey = NamespacedKey.minecraft(entry.getKey().toLowerCase());
+            else
+                namespacedKey = NamespacedKey.fromString(entry.getKey());
             if (namespacedKey == null)
                 continue;
 

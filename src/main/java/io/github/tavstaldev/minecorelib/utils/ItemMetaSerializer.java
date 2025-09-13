@@ -228,9 +228,9 @@ public class ItemMetaSerializer {
                         if (rawRoles != null) {
                             for (String line : rawRoles) {
                                 if (line.contains("{") && line.contains("}")) {
-                                    meta.displayName(GsonComponentSerializer.gson().deserialize(line));
+                                    loreList.add(GsonComponentSerializer.gson().deserialize(line));
                                 } else {
-                                    meta.displayName(ChatUtils.translateColors(line, true));
+                                    loreList.add(ChatUtils.translateColors(line, true));
                                 }
                             }
                         }
@@ -272,7 +272,7 @@ public class ItemMetaSerializer {
                 String messageBase = "An error occurred while deserializing %s meta: %s";
                 //#region Enchants
                 try {
-                    EnchantmentMetaHandler.serialize(this, meta, itemMap);
+                    EnchantmentMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
                     _logger.Error(String.format(messageBase, "enchant", metaEx.getMessage()));
