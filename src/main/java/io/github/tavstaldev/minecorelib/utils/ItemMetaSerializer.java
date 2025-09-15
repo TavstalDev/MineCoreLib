@@ -6,9 +6,11 @@ import io.github.tavstaldev.minecorelib.models.item.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
@@ -80,6 +82,115 @@ public class ItemMetaSerializer {
                 // Add durability
                 if (meta instanceof Damageable) {
                     itemData.put("durability", ((Damageable) meta).getDamage());
+                }
+
+                // Add persistent data
+                if (item.getPersistentDataContainer() != null) {
+                    Map<String, Object> persistentData = new HashMap<>();
+                    var data = item.getPersistentDataContainer();
+                    for (var key : data.getKeys()) {
+                        if (data.has(key, PersistentDataType.STRING)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "STRING",
+                                   "value", data.get(key, PersistentDataType.STRING)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.INTEGER)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "INTEGER",
+                                            "value", data.get(key, PersistentDataType.INTEGER)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.DOUBLE)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "DOUBLE",
+                                            "value", data.get(key, PersistentDataType.DOUBLE)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.FLOAT)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "FLOAT",
+                                            "value", data.get(key, PersistentDataType.FLOAT)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.LONG)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "LONG",
+                                            "value", data.get(key, PersistentDataType.LONG)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.BYTE)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "BYTE",
+                                            "value", data.get(key, PersistentDataType.BYTE)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.BYTE_ARRAY)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "BYTE_ARRAY",
+                                            "value", data.get(key, PersistentDataType.BYTE_ARRAY)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.INTEGER_ARRAY)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "INTEGER_ARRAY",
+                                            "value", data.get(key, PersistentDataType.INTEGER_ARRAY)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.LONG_ARRAY)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "LONG_ARRAY",
+                                            "value", data.get(key, PersistentDataType.LONG_ARRAY)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.SHORT)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "SHORT",
+                                            "value", data.get(key, PersistentDataType.SHORT)
+                                    )
+                            );
+                            continue;
+                        }
+
+                        if (data.has(key, PersistentDataType.BOOLEAN)) {
+                            persistentData.put(key.asString(),
+                                    Map.of("type", "BOOLEAN",
+                                            "value", data.get(key, PersistentDataType.BOOLEAN)
+                                    )
+                            );
+                            continue;
+                        }
+                    }
+                    if (!persistentData.isEmpty()) {
+                        itemData.put("persistent-data", persistentData);
+                    }
                 }
 
                 // Add nbt tags
@@ -246,6 +357,77 @@ public class ItemMetaSerializer {
                             durability = (int) itemMap.get("durability");  // Get the durability of the item
                         } catch (ClassCastException ignored){}
                         damageableMeta.setDamage(durability);
+                    }
+                }
+
+                if (itemMap.containsKey("persistent-data")) {
+                    var dataContainer = meta.getPersistentDataContainer();
+                    Map<String, Object> dataMap = TypeUtils.castAsMap(itemMap.get("persistent-data"), null);
+                    if (dataMap != null) {
+                        for (var entry : dataMap.entrySet()) {
+                            var key = entry.getKey();
+                            NamespacedKey namespacedKey = NamespacedKey.fromString(key);
+                            if (namespacedKey == null)
+                                continue;
+                            var valueMap = TypeUtils.castAsMap(entry.getValue(), null);
+                            if (valueMap == null || !valueMap.containsKey("type") || !valueMap.containsKey("value"))
+                                continue;
+
+                            var type = (String) valueMap.get("type");
+                            var value = valueMap.get("value");
+                            switch (type) {
+                                case "STRING" -> {
+                                    if (value instanceof String stringValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.STRING, stringValue);
+                                    }
+                                }
+                                case "INTEGER" -> {
+                                    if (value instanceof Integer intValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.INTEGER, intValue);
+                                    }
+                                }
+                                case "DOUBLE" -> {
+                                    if (value instanceof Double doubleValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.DOUBLE, doubleValue);
+                                    }
+                                }
+                                case "FLOAT" -> {
+                                    if (value instanceof Float floatValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.FLOAT, floatValue);
+                                    }
+                                }
+                                case "LONG" -> {
+                                    if (value instanceof Long longValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.LONG, longValue);
+                                    }
+                                }
+                                case "BYTE" -> {
+                                    if (value instanceof Byte byteValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.BYTE, byteValue);
+                                    }
+                                }
+                                case "BYTE_ARRAY" -> {
+                                    if (value instanceof byte[] byteArrayValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.BYTE_ARRAY, byteArrayValue);
+                                    }
+                                }
+                                case "INTEGER_ARRAY" -> {
+                                    if (value instanceof int[] intArrayValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.INTEGER_ARRAY, intArrayValue);
+                                    }
+                                }
+                                case "LONG_ARRAY" -> {
+                                    if (value instanceof long[] longArrayValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.LONG_ARRAY, longArrayValue);
+                                    }
+                                }
+                                case "SHORT" -> {
+                                    if (value instanceof Short shortValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.SHORT, shortValue);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
