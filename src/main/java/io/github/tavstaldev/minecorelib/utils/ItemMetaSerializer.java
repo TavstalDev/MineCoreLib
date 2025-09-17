@@ -426,6 +426,11 @@ public class ItemMetaSerializer {
                                         dataContainer.set(namespacedKey, PersistentDataType.SHORT, shortValue);
                                     }
                                 }
+                                case "BOOLEAN" -> {
+                                    if (value instanceof Boolean booleanValue) {
+                                        dataContainer.set(namespacedKey, PersistentDataType.BOOLEAN, booleanValue);
+                                    }
+                                }
                             }
                         }
                     }
