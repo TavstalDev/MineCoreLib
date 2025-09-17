@@ -1,9 +1,9 @@
 package io.github.tavstaldev.minecorelib.core;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -93,11 +93,15 @@ public class GuiDupeDetector implements Listener {
         return Boolean.TRUE.equals(container.get(NAMESPACED_KEY, PersistentDataType.BOOLEAN));
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onItemPickup(InventoryPickupItemEvent event) {
         if (primaryPlugin == null)
             return;
         var itemStack = event.getItem().getItemStack();
+        if (itemStack == null || itemStack.getType().isAir()) {
+            return;
+        }
+
         if (!isDuped(itemStack))
             return;
 
@@ -105,11 +109,15 @@ public class GuiDupeDetector implements Listener {
         event.getInventory().remove(itemStack);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onItemSpawn(ItemSpawnEvent event) {
         if (primaryPlugin == null)
             return;
         var itemStack = event.getEntity().getItemStack();
+        if (itemStack == null || itemStack.getType().isAir()) {
+            return;
+        }
+
         if (!isDuped(itemStack))
             return;
 
@@ -118,13 +126,14 @@ public class GuiDupeDetector implements Listener {
     }
 
     // WORKS
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onItemHover(InventoryClickEvent event) {
         if (primaryPlugin == null)
             return;
         var itemStack = event.getCurrentItem();
-        if (itemStack == null)
+        if (itemStack == null || itemStack.getType().isAir()) {
             return;
+        }
         if (!isDuped(itemStack))
             return;
 
@@ -133,31 +142,37 @@ public class GuiDupeDetector implements Listener {
     }
 
     // WORKS
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void  onDropItem(PlayerDropItemEvent event) {
         if (primaryPlugin == null)
             return;
-        Player player = event.getPlayer();
-        if (!isDuped(event.getItemDrop().getItemStack()))
+
+        var itemStack = event.getItemDrop().getItemStack();
+        if (itemStack == null || itemStack.getType().isAir()) {
+            return;
+        }
+
+        if (!isDuped(itemStack))
             return;
 
-        event.setCancelled(true);
         event.getItemDrop().remove();
-        Bukkit.getScheduler().runTaskLater(primaryPlugin, () -> {
-            player.getInventory().remove(event.getItemDrop().getItemStack());
-        }, 2L);
     }
 
     // WORKS
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBlockPlace(org.bukkit.event.block.BlockPlaceEvent event) {
         if (primaryPlugin == null)
             return;
         Player player = event.getPlayer();
-        if (!isDuped(event.getItemInHand()))
+        var itemStack = event.getItemInHand();
+        if (itemStack == null || itemStack.getType().isAir()) {
+            return;
+        }
+
+        if (!isDuped(itemStack))
             return;
 
         event.setCancelled(true);
-        player.getInventory().remove(event.getItemInHand());
+        player.getInventory().remove(itemStack);
     }
 }
