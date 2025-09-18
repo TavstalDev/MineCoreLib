@@ -6,11 +6,13 @@ import io.github.tavstaldev.minecorelib.utils.TypeUtils;
 import io.github.tavstaldev.minecorelib.utils.VersionUtils;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -133,10 +135,16 @@ public class PotionMetaHandler {
         // Base Potion Type
         if (itemData.containsKey("basePotionType")) {
             String potion = (String) itemData.get("basePotionType");
-            var potionKey = NamespacedKey.fromString(potion);
-            if (potionKey != null) {
+
+            NamespacedKey namespacedKey;
+            if (!potion.contains(":"))
+                namespacedKey = NamespacedKey.minecraft(potion.toLowerCase());
+            else
+                namespacedKey = NamespacedKey.fromString(potion);
+
+            if (namespacedKey != null) {
                 potionMeta.setBasePotionType(RegistryAccess.registryAccess()
-                        .getRegistry(RegistryKey.POTION).get(potionKey));
+                        .getRegistry(RegistryKey.POTION).get(namespacedKey));
             }
         }
 
@@ -147,7 +155,11 @@ public class PotionMetaHandler {
                 return;
 
             for (var entry : effects.entrySet()) {
-                var effectKey = NamespacedKey.fromString(entry.getKey());
+                NamespacedKey effectKey;
+                if (!entry.getKey().contains(":"))
+                    effectKey = NamespacedKey.minecraft(entry.getKey().toLowerCase());
+                else
+                    effectKey = NamespacedKey.fromString(entry.getKey());
                 if (effectKey == null)
                     continue;
 
