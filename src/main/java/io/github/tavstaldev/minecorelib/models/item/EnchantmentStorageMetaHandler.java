@@ -53,7 +53,7 @@ public class EnchantmentStorageMetaHandler {
                 if (enchantment == null)
                     continue;
 
-                enchantmentStorageMeta.addEnchant(enchantment, (Integer)entry.getValue(), true);
+                enchantmentStorageMeta.addStoredEnchant(enchantment, (Integer)entry.getValue(), true);
             }
             return;
         }
@@ -74,7 +74,7 @@ public class EnchantmentStorageMetaHandler {
             if (enchantment == null)
                 continue;
 
-            enchantmentStorageMeta.addEnchant(enchantment, entry.getValue(), true);
+            enchantmentStorageMeta.addStoredEnchant(enchantment, entry.getValue(), true);
         }
     }
 }
