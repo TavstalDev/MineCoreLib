@@ -226,6 +226,14 @@ public class ItemMetaSerializer {
                     _logger.Error(String.format(messageBase, "enchant", metaEx.getMessage()));
                 }
                 //#endregion
+                //#region Enchantment Storage
+                try {
+                    EnchantmentStorageMetaHandler.serialize(this, meta, itemData);
+                }
+                catch (Exception metaEx) {
+                    _logger.Error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
+                }
+                //#endregion
                 //#region Books
                 try {
                     BookMetaHandler.serialize(this, meta, itemData);
@@ -471,6 +479,14 @@ public class ItemMetaSerializer {
                 }
                 catch (Exception metaEx) {
                     _logger.Error(String.format(messageBase, "book", metaEx.getMessage()));
+                }
+                //#endregion
+                //#region Enchantment Storage
+                try {
+                    EnchantmentStorageMetaHandler.deserialize(this, meta, itemMap);
+                }
+                catch (Exception metaEx) {
+                    _logger.Error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Crossbow

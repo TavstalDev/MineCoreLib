@@ -6,54 +6,34 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A handler for serializing and deserializing the enchantments of an {@link ItemMeta}.
- * This class provides static methods to convert the enchantments of an item into a storable format
- * and reconstruct them from the stored data.
- */
-public class EnchantmentMetaHandler {
+public class EnchantmentStorageMetaHandler {
 
-    /**
-     * Serializes the enchantments of an {@link ItemMeta} into a map.
-     * If the provided {@link ItemMeta} does not have any enchantments, the method returns without modifying the map.
-     *
-     * @param parent   The {@link ItemMetaSerializer} used for additional serialization logic.
-     * @param meta     The {@link ItemMeta} to serialize, expected to have enchantments.
-     * @param itemData The map where the serialized enchantment data will be stored.
-     * @throws Exception If an error occurs during serialization.
-     */
     public static void serialize(ItemMetaSerializer parent, ItemMeta meta, Map<String, Object> itemData) throws Exception {
-        if (!meta.hasEnchants())
+        if (!(meta instanceof EnchantmentStorageMeta enchantmentStorageMeta))
             return;
 
         Map<String, Integer> enchantments = new HashMap<>();
-        for (var entry : meta.getEnchants().entrySet()) {
+        for (var entry : enchantmentStorageMeta.getEnchants().entrySet()) {
             enchantments.put(entry.getKey().getKey().toString(), entry.getValue());  // Store enchantment names and levels
         }
-        itemData.put("enchantments", enchantments);
+        itemData.put("enchantmentStorage", enchantments);
     }
 
-    /**
-     * Deserializes the enchantments from a map into an {@link ItemMeta}.
-     * If the provided map does not contain valid enchantment data, the method returns without modifying the meta.
-     *
-     * @param parent   The {@link ItemMetaSerializer} used for additional deserialization logic.
-     * @param meta     The {@link ItemMeta} to populate with enchantments.
-     * @param itemData The map containing the serialized enchantment data.
-     * @throws Exception If the enchantment data is invalid or if an error occurs during deserialization.
-     */
     public static void deserialize(ItemMetaSerializer parent, ItemMeta meta, Map<String, Object> itemData) throws Exception {
-        if (!itemData.containsKey("enchantments"))
+        if (!itemData.containsKey("enchantmentStorage"))
             return;
 
-        var data = itemData.get("enchantments");
+        if (!(meta instanceof EnchantmentStorageMeta enchantmentStorageMeta))
+            return;
+
+        var data = itemData.get("enchantmentStorage");
         if (data instanceof ConfigurationSection section) {
             Map<String, Object> enchantments = section.getValues(false);
             if (enchantments.isEmpty())
@@ -73,7 +53,7 @@ public class EnchantmentMetaHandler {
                 if (enchantment == null)
                     continue;
 
-                meta.addEnchant(enchantment, (Integer)entry.getValue(), true);
+                enchantmentStorageMeta.addEnchant(enchantment, (Integer)entry.getValue(), true);
             }
             return;
         }
@@ -94,7 +74,7 @@ public class EnchantmentMetaHandler {
             if (enchantment == null)
                 continue;
 
-            meta.addEnchant(enchantment, entry.getValue(), true);
+            enchantmentStorageMeta.addEnchant(enchantment, entry.getValue(), true);
         }
     }
 }
