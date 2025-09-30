@@ -298,7 +298,7 @@ public abstract class PluginBase extends JavaPlugin {
             return;
         }
         // Log the localized message to the console or other non-player sender
-        getCustomLogger().info(localize(key));
+        getCustomLogger().info(ChatUtils.translateColors(localize(key), true));
     }
 
     /**
@@ -317,7 +317,7 @@ public abstract class PluginBase extends JavaPlugin {
             return;
         }
         // Log the localized message with parameters to the console or other non-player sender
-        getCustomLogger().info(localize(key, parameters));
+        getCustomLogger().info(ChatUtils.translateColors(localize(key, parameters), true));
     }
 
 
