@@ -37,7 +37,7 @@ public class ItemMetaSerializer {
      * @param plugin The {@link PluginBase} instance used to retrieve the custom logger.
      */
     public ItemMetaSerializer(PluginBase plugin) {
-        _logger = plugin.getCustomLogger().WithModule(this.getClass());
+        _logger = plugin.getCustomLogger().withModule(this.getClass());
 
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK); // Forces multi-line formatting
@@ -56,7 +56,7 @@ public class ItemMetaSerializer {
      */
     public Map<String, Object> serializeItemStack(@NotNull ItemStack item) {
         Map<String, Object> itemData = new HashMap<>();
-        _logger.Debug("Serializing item: " + item.getType().name());
+        _logger.debug("Serializing item: " + item.getType().name());
         itemData.put("material", item.getType().toString());  // Store the material (type) of the item
         itemData.put("amount", item.getAmount());  // Store the amount of the item
 
@@ -196,7 +196,7 @@ public class ItemMetaSerializer {
                 // Add nbt tags
                 if (VersionUtils.isAtLeast(1,21, 5)) {
                     if (meta.hasCustomModelDataComponent()) {
-                        _logger.Debug("Not implemented yet: customModelDataComponent");
+                        _logger.debug("Not implemented yet: customModelDataComponent");
                         // TODO: Implement customModelDataComponent handling
                         // When more information is available, this can be implemented.
                         /*var customModelData = meta.getCustomModelDataComponent();
@@ -223,7 +223,7 @@ public class ItemMetaSerializer {
                     EnchantmentMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "enchant", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "enchant", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Enchantment Storage
@@ -231,7 +231,7 @@ public class ItemMetaSerializer {
                     EnchantmentStorageMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Books
@@ -239,7 +239,7 @@ public class ItemMetaSerializer {
                     BookMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "book", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "book", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Crossbow
@@ -247,7 +247,7 @@ public class ItemMetaSerializer {
                     CrossbowMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "crossbow", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "crossbow", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Firework Effect
@@ -255,7 +255,7 @@ public class ItemMetaSerializer {
                     FireworkEffectMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "firework effect", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "firework effect", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Fireworks
@@ -263,7 +263,7 @@ public class ItemMetaSerializer {
                     FireworkMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "firework", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "firework", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Leather Armor
@@ -271,7 +271,7 @@ public class ItemMetaSerializer {
                     LeatherArmorMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "leather armor", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "leather armor", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Potions
@@ -279,7 +279,7 @@ public class ItemMetaSerializer {
                     PotionMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "potion", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "potion", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Skulls
@@ -287,7 +287,7 @@ public class ItemMetaSerializer {
                     SkullMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "skull", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "skull", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Spawn Eggs
@@ -295,7 +295,7 @@ public class ItemMetaSerializer {
                     SpawnEggMetaHandler.serialize(this, meta, itemData);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "spawn egg", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "spawn egg", metaEx.getMessage()));
                 }
                 //#endregion
             }
@@ -447,7 +447,7 @@ public class ItemMetaSerializer {
                 // customModelData
                 if (itemMap.containsKey("customModelData")) {
                     if (VersionUtils.isAtLeast(1,21, 5)) {
-                        _logger.Debug("Not implemented yet: customModelDataComponent");
+                        _logger.debug("Not implemented yet: customModelDataComponent");
                         // TODO: Implement customModelDataComponent handling
                         // When more information is available, this can be implemented.
                         /*var customModelData = CustomModelData.customModelData()
@@ -470,7 +470,7 @@ public class ItemMetaSerializer {
                     EnchantmentMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "enchant", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "enchant", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Books
@@ -478,7 +478,7 @@ public class ItemMetaSerializer {
                     BookMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "book", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "book", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Enchantment Storage
@@ -486,7 +486,7 @@ public class ItemMetaSerializer {
                     EnchantmentStorageMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "enchantment storage", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Crossbow
@@ -494,7 +494,7 @@ public class ItemMetaSerializer {
                     CrossbowMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "crossbow", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "crossbow", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Firework Effect
@@ -502,7 +502,7 @@ public class ItemMetaSerializer {
                     FireworkEffectMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "firework effect", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "firework effect", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Fireworks
@@ -510,7 +510,7 @@ public class ItemMetaSerializer {
                     FireworkMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "firework", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "firework", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Leather Armor
@@ -518,7 +518,7 @@ public class ItemMetaSerializer {
                     LeatherArmorMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "leather armor", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "leather armor", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Potions
@@ -526,7 +526,7 @@ public class ItemMetaSerializer {
                     PotionMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "potion", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "potion", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Skulls
@@ -534,7 +534,7 @@ public class ItemMetaSerializer {
                     SkullMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "skull", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "skull", metaEx.getMessage()));
                 }
                 //#endregion
                 //#region Spawn Eggs
@@ -542,7 +542,7 @@ public class ItemMetaSerializer {
                     SpawnEggMetaHandler.deserialize(this, meta, itemMap);
                 }
                 catch (Exception metaEx) {
-                    _logger.Error(String.format(messageBase, "spawn egg", metaEx.getMessage()));
+                    _logger.error(String.format(messageBase, "spawn egg", metaEx.getMessage()));
                 }
                 //#endregion
 
@@ -550,7 +550,7 @@ public class ItemMetaSerializer {
                 itemResult = item;
             }
         } catch (Exception ex) {
-            _logger.Error("An error occurred while deserializing items: " + ex);
+            _logger.error("An error occurred while deserializing items: " + ex);
         }
         return itemResult;
     }
@@ -619,7 +619,7 @@ public class ItemMetaSerializer {
         try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
             objectStream.writeObject(itemData);
         } catch (IOException ex) {
-            _logger.Error("An error occurred while serializing item: " + ex.getMessage());
+            _logger.error("An error occurred while serializing item: " + ex.getMessage());
         }
         return new byte[0];  // Return empty byte array if serialization fails
     }
@@ -638,7 +638,7 @@ public class ItemMetaSerializer {
         try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
             objectStream.writeObject(itemDataList);
         } catch (IOException ex) {
-            _logger.Error("An error occurred while serializing items: " + ex.getMessage());
+            _logger.error("An error occurred while serializing items: " + ex.getMessage());
         }
         return new byte[0];  // Return empty byte array if serialization fails
     }
@@ -704,19 +704,19 @@ public class ItemMetaSerializer {
 
             var streamObject = objectStream.readObject();
             if (!(streamObject instanceof Map)) {
-                _logger.Error("Deserialized object is not a Map.");
+                _logger.error("Deserialized object is not a Map.");
                 return null;
             }
 
             Map<String, Object> itemMap = TypeUtils.castAsMap(streamObject, null);
             if (itemMap == null) {
-                _logger.Error("Deserialized object is not a Map<String, Object>.");
+                _logger.error("Deserialized object is not a Map<String, Object>.");
                 return null;
             }
 
             return deserializeItemStack(itemMap);
         } catch (IOException | ClassNotFoundException ex) {
-            _logger.Error("An error occurred while deserializing items: " + ex.getMessage());
+            _logger.error("An error occurred while deserializing items: " + ex.getMessage());
         }
         return null;
     }
@@ -735,19 +735,19 @@ public class ItemMetaSerializer {
 
             var streamObject = objectStream.readObject();
             if (!(streamObject instanceof List)) {
-                _logger.Error("Deserialized object is not a List.");
+                _logger.error("Deserialized object is not a List.");
                 return items;
             }
 
             List<Map<String, Object>> itemDataList = TypeUtils.castAsListOfMaps(streamObject, null);
             if (itemDataList == null) {
-                _logger.Error("Deserialized object is not a List<Map<String, Object>>.");
+                _logger.error("Deserialized object is not a List<Map<String, Object>>.");
                 return items;
             }
 
             items = deserializeItemStackList(itemDataList);
         } catch (IOException | ClassNotFoundException ex) {
-            _logger.Error("An error occurred while deserializing items: " + ex.getMessage());
+            _logger.error("An error occurred while deserializing items: " + ex.getMessage());
         }
         return items;
     }

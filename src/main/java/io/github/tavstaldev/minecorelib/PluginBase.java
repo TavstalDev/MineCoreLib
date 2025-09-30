@@ -6,6 +6,7 @@ import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.intellij.lang.annotations.RegExp;
@@ -139,7 +140,7 @@ public abstract class PluginBase extends JavaPlugin {
     /**
      * Checks if the plugin is up-to-date by comparing the current version with the latest version
      * retrieved from the specified download URL.
-     *
+     * <br>
      * This method performs an asynchronous HTTP GET request to fetch the latest version information
      * in JSON format. It parses the response and compares the "tag_name" field with the current version.
      * Logs debug, warning, and error messages during the process.
@@ -147,7 +148,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @return {@code true} if the plugin is up-to-date, {@code false} otherwise.
      */
     public CompletableFuture<Boolean> isUpToDate() {
-        _logger.Debug("Checking for updates...");
+        _logger.debug("Checking for updates...");
         // Build the HTTP request to fetch the latest version information
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(_downloadUrl))
@@ -161,41 +162,41 @@ public abstract class PluginBase extends JavaPlugin {
                 .thenApply(response -> {
                     // Check HTTP status code
                     if (response.statusCode() != 200) {
-                        _logger.Debug("GET request failed for " + _downloadUrl + ". Status: " + response.statusCode());
+                        _logger.debug("GET request failed for " + _downloadUrl + ". Status: " + response.statusCode());
                         throw new RuntimeException("API returned non-200 status: " + response.statusCode());
                     }
                     return response.body();
                 })
                 .thenApply(jsonBody -> {
                     try {
-                        _logger.Debug("Parsing JSON response from " + _downloadUrl);
+                        _logger.debug("Parsing JSON response from " + _downloadUrl);
                         return JsonParser.parseString(jsonBody);
                     } catch (JsonSyntaxException e) {
-                        _logger.Debug("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
+                        _logger.debug("Failed to parse JSON response from " + _downloadUrl + ": " + e.getMessage());
                         throw new RuntimeException("JSON parsing error", e);
                     }
                 })
                 .thenApply(jsonElement -> {
                     if (jsonElement == null) {
-                        _logger.Warn("Failed to retrieve the latest version information from " + _downloadUrl);
+                        _logger.warn("Failed to retrieve the latest version information from " + _downloadUrl);
                         return false; // Treat as not up-to-date or an error occurred
                     }
 
                     if (!jsonElement.isJsonObject()) {
-                        _logger.Warn("Expected a JSON object from " + _downloadUrl + ", but got: " + jsonElement);
+                        _logger.warn("Expected a JSON object from " + _downloadUrl + ", but got: " + jsonElement);
                         return false; // Treat as not up-to-date or an error occurred
                     }
 
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     String latestVersion = jsonObject.get("tag_name").getAsString();
                     String currentVersion = getVersion();
-                    _logger.Debug("Current version: " + currentVersion);
-                    _logger.Debug("Latest version: " + latestVersion);
+                    _logger.debug("Current version: " + currentVersion);
+                    _logger.debug("Latest version: " + latestVersion);
 
                     return currentVersion.equalsIgnoreCase(latestVersion) || ("v" + currentVersion).equalsIgnoreCase(latestVersion);
                 })
                 .exceptionally(ex -> {
-                    _logger.Error("Error during update check: " + ex.getMessage());
+                    _logger.error("Error during update check: " + ex.getMessage());
                     /*getServer().getScheduler().runTask(this, () -> {
                         _logger.Error("An error occurred while checking for updates: " + ex.getMessage());
                     });*/
@@ -254,7 +255,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key        The localization key.
      */
     public void sendLocalizedMsg(Player player, String key) {
-        String rawMessage = _translator.Localize(player, key);
+        String rawMessage = _translator.localize(player, key);
         sendRichMsg(player, replacePlaceholders(rawMessage));
     }
 
@@ -266,7 +267,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param parameters The dictionary containing placeholder keys and their corresponding values.
      */
     public void sendLocalizedMsg(Player player, String key, Map<String, Object> parameters) {
-        String rawMessage = _translator.Localize(player, key);
+        String rawMessage = _translator.localize(player, key);
 
         // Get the keys
         var keys = parameters.keySet();
@@ -283,13 +284,51 @@ public abstract class PluginBase extends JavaPlugin {
     }
 
     /**
+     * Sends a localized command reply to the sender.
+     * If the sender is a player, the message is sent using the player's locale.
+     * Otherwise, the message is logged to the plugin's custom logger.
+     *
+     * @param sender The command sender (can be a Player or Console).
+     * @param key    The localization key for the message to be sent.
+     */
+    public void sendCommandReply(CommandSender sender, String key) {
+        if (sender instanceof Player player) {
+            // Send a localized message to the player
+            sendLocalizedMsg(player, key);
+            return;
+        }
+        // Log the localized message to the console or other non-player sender
+        getCustomLogger().info(localize(key));
+    }
+
+    /**
+     * Sends a localized command reply to the sender with placeholders replaced by provided parameters.
+     * If the sender is a player, the message is sent using the player's locale.
+     * Otherwise, the message is logged to the plugin's custom logger.
+     *
+     * @param sender     The command sender (can be a Player or Console).
+     * @param key        The localization key for the message to be sent.
+     * @param parameters A map of placeholder keys and their corresponding values to replace in the message.
+     */
+    public void sendCommandReply(CommandSender sender, String key, Map<String, Object> parameters) {
+        if (sender instanceof Player player) {
+            // Send a localized message with parameters to the player
+            sendLocalizedMsg(player, key, parameters);
+            return;
+        }
+        // Log the localized message with parameters to the console or other non-player sender
+        getCustomLogger().info(localize(key, parameters));
+    }
+
+
+    /**
      * Localizes a given key to its corresponding value.
      *
      * @param key the key to be localized.
      * @return the localized string, or an empty string if the key is not found.
      */
-    public String Localize(String key) {
-        return getTranslator().Localize(key);
+    public String localize(String key) {
+        return getTranslator().localize(key);
     }
 
     /**
@@ -298,8 +337,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key the key to be localized.
      * @return the localized list of strings, or an empty list if the key is not found.
      */
-    public List<String> LocalizeList(String key) {
-        return getTranslator().LocalizeList(key);
+    public List<String> localizeList(String key) {
+        return getTranslator().localizeList(key);
     }
 
     /**
@@ -308,8 +347,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key the key to be localized.
      * @return the localized array of strings, or an empty array if the key is not found.
      */
-    public String[] LocalizeArray(String key) {
-       return getTranslator().LocalizeArray(key);
+    public String[] localizeArray(String key) {
+       return getTranslator().localizeArray(key);
     }
 
     /**
@@ -319,8 +358,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param args the arguments to format the localized string.
      * @return the formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(String key, Map<String, Object> args) {
-        return getTranslator().Localize(key, args);
+    public String localize(String key, Map<String, Object> args) {
+        return getTranslator().localize(key, args);
     }
 
     /**
@@ -330,8 +369,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key The key to be localized.
      * @return The localized string, or an empty string if the key is not found.
      */
-    public String Localize(Player player, String key) {
-        return getTranslator().Localize(player, key);
+    public String localize(Player player, String key) {
+        return getTranslator().localize(player, key);
     }
 
     /**
@@ -341,8 +380,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key The key to be localized.
      * @return The localized list of strings, or an empty list if the key is not found.
      */
-    public List<String> LocalizeList(Player player, String key) {
-        return getTranslator().LocalizeList(player, key);
+    public List<String> localizeList(Player player, String key) {
+        return getTranslator().localizeList(player, key);
     }
 
     /**
@@ -352,8 +391,8 @@ public abstract class PluginBase extends JavaPlugin {
      * @param key The key to be localized.
      * @return The localized array of strings, or an empty array if the key is not found.
      */
-    public String[] LocalizeArray(Player player,String key) {
-        return getTranslator().LocalizeArray(player, key);
+    public String[] localizeArray(Player player, String key) {
+        return getTranslator().localizeArray(player, key);
     }
 
     /**
@@ -364,7 +403,7 @@ public abstract class PluginBase extends JavaPlugin {
      * @param args The arguments to format the localized string.
      * @return The formatted localized string, or an empty string if the key is not found.
      */
-    public String Localize(Player player,String key, Map<String, Object> args) {
-        return getTranslator().Localize(player, key, args);
+    public String localize(Player player, String key, Map<String, Object> args) {
+        return getTranslator().localize(player, key, args);
     }
 }

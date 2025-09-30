@@ -30,7 +30,7 @@ public class TypeUtils {
                 return targetClass.cast(obj);
             } else {
                 if (hasLogger) {
-                    optionalLogger.Error(String.format("Cannot cast object of type %s to %s",
+                    optionalLogger.error(String.format("Cannot cast object of type %s to %s",
                             obj.getClass().getName(),
                             targetClass.getName()
                     ));
@@ -39,7 +39,7 @@ public class TypeUtils {
             }
         } catch (Exception ex) {
             if (hasLogger) {
-                optionalLogger.Error(String.format("Error casting object: %s", ex.getMessage()));
+                optionalLogger.error(String.format("Error casting object: %s", ex.getMessage()));
             }
             return null; // returning null to indicate failure
         }
@@ -57,7 +57,7 @@ public class TypeUtils {
         boolean hasLogger = optionalLogger != null;
         if (!(obj instanceof List<?> rawList)) {
             if (hasLogger) {
-                optionalLogger.Warn("Expected List, but found: " + obj.getClass().getName());
+                optionalLogger.warn("Expected List, but found: " + obj.getClass().getName());
             }
             return null; // returning null to indicate failure
         }
@@ -67,7 +67,7 @@ public class TypeUtils {
             for (Object item : rawList) {
                 if (item == null) {
                     if (hasLogger) {
-                        optionalLogger.Warn("Found null item in list, skipping.");
+                        optionalLogger.warn("Found null item in list, skipping.");
                     }
                     continue; // skip null items
                 }
@@ -77,7 +77,7 @@ public class TypeUtils {
             }
         } catch (Exception ex) {
             if (hasLogger) {
-                optionalLogger.Error(String.format("Error casting object to List<T>: %s", ex.getMessage()));
+                optionalLogger.error(String.format("Error casting object to List<T>: %s", ex.getMessage()));
             }
             return null;
         }
@@ -98,7 +98,7 @@ public class TypeUtils {
 
         if (!(obj instanceof Map<?, ?> rawMap)) {
             if (hasLogger) {
-                optionalLogger.Warn("Expected Map, but found: " + obj.getClass().getName());
+                optionalLogger.warn("Expected Map, but found: " + obj.getClass().getName());
             }
             return null; // returning null to indicate failure
         }
@@ -109,7 +109,7 @@ public class TypeUtils {
             return typedMap;
         } catch (Exception ex) {
             if (hasLogger) {
-                optionalLogger.Error(String.format("Error casting object to Map<K, V>: %s", ex.getMessage()));
+                optionalLogger.error(String.format("Error casting object to Map<K, V>: %s", ex.getMessage()));
             }
             return null; // returning null to indicate failure
         }
@@ -129,7 +129,7 @@ public class TypeUtils {
 
         if (!(obj instanceof List<?> rawList)) {
             if (hasLogger) {
-                optionalLogger.Warn("Expected List, but found: " + obj.getClass().getName());
+                optionalLogger.warn("Expected List, but found: " + obj.getClass().getName());
             }
             return null; // returning null to indicate failure
         }
@@ -138,7 +138,7 @@ public class TypeUtils {
         for (Object item : rawList) {
             if (item == null) {
                 if (hasLogger) {
-                    optionalLogger.Warn("Found null item in list, skipping.");
+                    optionalLogger.warn("Found null item in list, skipping.");
                 }
                 continue; // skip null items
             }
@@ -149,7 +149,7 @@ public class TypeUtils {
                 resultList.add(typedMap);
             } else {
                 if (hasLogger) {
-                    optionalLogger.Warn("Expected Map in list, but found: " + item.getClass().getName());
+                    optionalLogger.warn("Expected Map in list, but found: " + item.getClass().getName());
                 }
             }
         }

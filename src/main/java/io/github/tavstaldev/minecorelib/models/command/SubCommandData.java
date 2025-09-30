@@ -61,7 +61,7 @@ public class SubCommandData {
                 args.put(key, param);
                 continue;
             }
-            args.put(key, plugin.getTranslator().Localize(player, param.toString()));
+            args.put(key, plugin.getTranslator().localize(player, param.toString()));
         }
 
         plugin.sendLocalizedMsg(player, "Commands.Help.Line", args);

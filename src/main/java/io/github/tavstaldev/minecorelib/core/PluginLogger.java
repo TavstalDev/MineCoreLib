@@ -43,7 +43,7 @@ public class PluginLogger {
      * @param module The module name to be used in log messages.
      * @return A new PluginLogger instance with the specified module.
      */
-    public PluginLogger WithModule(String module) {
+    public PluginLogger withModule(String module) {
         return new PluginLogger(_plugin, module);
     }
 
@@ -53,7 +53,7 @@ public class PluginLogger {
      * @param module The class whose name will be used as the module name in log messages.
      * @return A new PluginLogger instance with the specified module.
      */
-    public PluginLogger WithModule(@NotNull Class<?> module) {
+    public PluginLogger withModule(@NotNull Class<?> module) {
         return new PluginLogger(_plugin,module.getSimpleName());
     }
 
@@ -63,7 +63,7 @@ public class PluginLogger {
      * @param level The severity level of the log message.
      * @param text  The message to log.
      */
-    private void Log(@NotNull Level level, @NotNull String text) {
+    private void log(@NotNull Level level, @NotNull String text) {
         String moduleText = "";
         if (_module != null)
             moduleText = String.format(" [%s]", _module);
@@ -79,7 +79,7 @@ public class PluginLogger {
      * @param text  The message to log.
      * @param color The color code to prepend to the log message for rich text formatting.
      */
-    private void LogRich(@NotNull Level level, @NotNull String text, @NotNull String color) {
+    private void logRich(@NotNull Level level, @NotNull String text, @NotNull String color) {
         String moduleText = "";
         if (_module != null)
             moduleText = String.format(" [%s]", _module);
@@ -93,7 +93,7 @@ public class PluginLogger {
      * @param text The object to convert.
      * @return The string representation of the object.
      */
-    private @NotNull String GetString(@NotNull Object text) {
+    private @NotNull String getString(@NotNull Object text) {
         if (text instanceof Exception ex) {
             return ex.getMessage();
         }
@@ -108,8 +108,8 @@ public class PluginLogger {
      *
      * @param text The message to log.
      */
-    public void Info(@NotNull Object text) {
-        Log(Level.INFO, GetString(text));
+    public void info(@NotNull Object text) {
+        log(Level.INFO, getString(text));
     }
 
     /**
@@ -120,8 +120,8 @@ public class PluginLogger {
      * @param text The message to log, which can be any object.
      *             The object will be converted to a string representation.
      */
-    public void Ok(@NotNull Object text) {
-        LogRich(Level.INFO, GetString(text), "\u001B[32m");
+    public void ok(@NotNull Object text) {
+        logRich(Level.INFO, getString(text), "\u001B[32m");
     }
 
     /**
@@ -129,8 +129,8 @@ public class PluginLogger {
      *
      * @param text The message to log.
      */
-    public void Warn(@NotNull Object text) {
-        Log(Level.WARNING, GetString(text));
+    public void warn(@NotNull Object text) {
+        log(Level.WARNING, getString(text));
     }
 
     /**
@@ -138,8 +138,8 @@ public class PluginLogger {
      *
      * @param text The message to log.
      */
-    public void Error(@NotNull Object text) {
-        Log(Level.SEVERE, GetString(text));
+    public void error(@NotNull Object text) {
+        log(Level.SEVERE, getString(text));
     }
 
     /**
@@ -147,12 +147,12 @@ public class PluginLogger {
      *
      * @param text The message to log.
      */
-    public void Debug(@NotNull Object text) {
+    public void debug(@NotNull Object text) {
         // noinspection ConstantConditions
         if (_plugin.getConfig() == null)
             return;
 
         if (_plugin.getConfig().getBoolean("debug", false))
-            Log(Level.INFO, GetString(text));
+            log(Level.INFO, getString(text));
     }
 }
