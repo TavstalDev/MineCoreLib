@@ -1,6 +1,7 @@
 package io.github.tavstaldev.minecorelib.models.command;
 
 import io.github.tavstaldev.minecorelib.PluginBase;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,23 +28,23 @@ public class SubCommandData {
     }
 
     /**
-     * Checks if the player has the required permission to execute the subcommand.
+     * Checks if the commandSender has the required permission to execute the subcommand.
      *
-     * @param player the player to check
-     * @return true if the player has the required permission, false otherwise
+     * @param commandSender the commandSender to check
+     * @return true if the commandSender has the required permission, false otherwise
      */
-    public boolean hasPermission(Player player) {
+    public boolean hasPermission(CommandSender commandSender) {
         if (this.permission == null || permission.isBlank())
             return true;
-        return player.hasPermission(this.permission);
+        return commandSender.hasPermission(this.permission);
     }
 
     /**
-     * Sends a localized message to the player with the subcommand details.
+     * Sends a localized message to the commandSender with the subcommand details.
      *
-     * @param player the player to send the message to
+     * @param commandSender the commandSender to send the message to
      */
-    public void send(PluginBase plugin, Player player) {
+    public void send(PluginBase plugin, CommandSender commandSender) {
         if (arguments == null)
             return;
 
@@ -51,6 +52,11 @@ public class SubCommandData {
             put("subcommand", command);
         }};
         var keys = arguments.keySet();
+
+        Player player = null;
+        if (commandSender instanceof Player p)
+            player = p;
+
         for (String key : keys) {
             Object param = arguments.get(key);
             if (param == null) {
@@ -61,9 +67,12 @@ public class SubCommandData {
                 args.put(key, param);
                 continue;
             }
-            args.put(key, plugin.getTranslator().localize(player, param.toString()));
+            if (player != null)
+                args.put(key, plugin.getTranslator().localize(player, param.toString()));
+            else
+                args.put(key, plugin.getTranslator().localize(param.toString()));
         }
 
-        plugin.sendLocalizedMsg(player, "Commands.Help.Line", args);
+        plugin.sendCommandReply(commandSender, "Commands.Help.Line", args);
     }
 }
