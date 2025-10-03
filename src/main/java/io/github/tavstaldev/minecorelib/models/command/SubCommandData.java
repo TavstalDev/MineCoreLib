@@ -3,6 +3,7 @@ package io.github.tavstaldev.minecorelib.models.command;
 import io.github.tavstaldev.minecorelib.PluginBase;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,13 +45,11 @@ public class SubCommandData {
      *
      * @param commandSender the commandSender to send the message to
      */
-    public void send(PluginBase plugin, CommandSender commandSender) {
+    public void send(PluginBase plugin, CommandSender commandSender, String baseCommand) {
         if (arguments == null)
             return;
 
-        Map<String, Object> args = new HashMap<>() {{
-            put("subcommand", command);
-        }};
+        Map<String, Object> args = new HashMap<>(Map.of("command", baseCommand, "subcommand", command));
         var keys = arguments.keySet();
 
         Player player = null;
