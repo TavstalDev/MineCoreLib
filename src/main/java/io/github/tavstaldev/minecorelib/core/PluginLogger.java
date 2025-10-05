@@ -10,6 +10,13 @@ import java.util.logging.Logger;
  * Utility class for logging messages with different severity levels.
  */
 public class PluginLogger {
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     private final PluginBase _plugin;
     private final String _module;
     private final Logger _logger;
@@ -109,7 +116,7 @@ public class PluginLogger {
      * @param text The message to log.
      */
     public void info(@NotNull Object text) {
-        log(Level.INFO, getString(text));
+        logRich(Level.INFO, getString(text), ANSI_CYAN);
     }
 
     /**
@@ -121,7 +128,7 @@ public class PluginLogger {
      *             The object will be converted to a string representation.
      */
     public void ok(@NotNull Object text) {
-        logRich(Level.INFO, getString(text), "\u001B[32m");
+        logRich(Level.INFO, getString(text), ANSI_GREEN);
     }
 
     /**
@@ -130,7 +137,7 @@ public class PluginLogger {
      * @param text The message to log.
      */
     public void warn(@NotNull Object text) {
-        log(Level.WARNING, getString(text));
+        logRich(Level.WARNING, getString(text), ANSI_YELLOW);
     }
 
     /**
@@ -139,7 +146,7 @@ public class PluginLogger {
      * @param text The message to log.
      */
     public void error(@NotNull Object text) {
-        log(Level.SEVERE, getString(text));
+        logRich(Level.SEVERE, getString(text), ANSI_RED);
     }
 
     /**
@@ -153,6 +160,6 @@ public class PluginLogger {
             return;
 
         if (_plugin.getConfig().getBoolean("debug", false))
-            log(Level.INFO, getString(text));
+            logRich(Level.INFO, getString(text), ANSI_PURPLE);
     }
 }
