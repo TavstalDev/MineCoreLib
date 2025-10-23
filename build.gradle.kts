@@ -1,10 +1,12 @@
 plugins {
     id("java")
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 val javaVersion: String by project
 val paperApiVersion: String by project
-val gsonVersion: String by project
+val spiGuiVersion: String by project
+val projectPackageName = "${project.group}.minecorelib"
 
 java {
     toolchain {
@@ -28,8 +30,27 @@ repositories {
 dependencies {
     // PaperMC dependency
     compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
+
+    // SpiGUI for GUI creation
+    implementation("com.samjakob:SpiGUI:${spiGuiVersion}")
 }
 
-tasks.test {
-    useJUnitPlatform()
+// Disable the default JAR task
+tasks.jar {
+    enabled = false
+}
+
+// Configure the Shadow JAR task
+tasks.shadowJar {
+    archiveClassifier.set("") // Set the classifier for the JAR
+    manifest {
+        attributes["paperweight-mappings-namespace"] = "spigot" // Add custom manifest attributes
+    }
+    // Relocate packages to avoid conflicts
+    relocate("com.samjakob.spigui", "${projectPackageName}.shadow.spigui")
+}
+
+// Ensure the Shadow JAR task runs during the build process
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }
