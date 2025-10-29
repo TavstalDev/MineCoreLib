@@ -128,6 +128,18 @@ public abstract class ConfigurationBase extends YamlConfiguration {
     }
 
     /**
+     * Resolves a configuration path by setting a comment if none exists.
+     *
+     * @param path    The configuration path to resolve.
+     * @param comment The comment to set if no comments exist for the path.
+     */
+    public void resolveComment(String path, String comment) {
+        if (this.getComments(path).isEmpty()) {
+            this.setComments(path, List.of(comment));
+        }
+    }
+
+    /**
      * Resolves a configuration path by setting comments if none exist.
      *
      * @param path     The configuration path.
