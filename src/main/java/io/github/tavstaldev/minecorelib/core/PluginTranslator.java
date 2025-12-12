@@ -574,6 +574,108 @@ public class PluginTranslator {
     }
 
     /**
+     * Localizes a given key to its corresponding list of values for a specific player and formats it with the provided arguments.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @param args The arguments to format the localized strings.
+     * @return A list of formatted localized strings, or an empty list if the key is not found.
+     */
+    public List<String> localizeList(Player player, String key, Map<String, Object> args) {
+        try
+        {
+            String[] keys = key.split("\\.");
+            String locale = getPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
+            for (String k : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(k);
+                } else {
+                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
+                    return new ArrayList<>();
+                }
+            }
+
+            var resultList = (List<String>)value;
+            for (int i = 0; i < resultList.size(); i++) {
+                String result = resultList.get(i);
+                var argKeys = args.keySet();
+                for (@RegExp var dirKey : argKeys) {
+                    @RegExp String finalKey;
+                    if (dirKey.startsWith("%"))
+                        finalKey = dirKey;
+                    else
+                        finalKey = "%" + dirKey + "%";
+                    result  = result.replace(finalKey, args.get(dirKey).toString());
+                }
+                resultList.set(i, result);
+            }
+
+            return resultList;
+        }
+        catch (Exception ex)
+        {
+            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.error(ex.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Localizes a given key to its corresponding array of values for a specific player and formats it with the provided arguments.
+     *
+     * @param player The player whose locale is to be used for localization.
+     * @param key The key to be localized.
+     * @param args The arguments to format the localized strings.
+     * @return A formatted array of localized strings, or an empty array if the key is not found.
+     */
+    public String[] localizeArray(Player player, String key, Map<String, Object> args) {
+        try
+        {
+            String[] keys = key.split("\\.");
+            String locale = getPlayerLocale(player);
+            Object value = _localization.get(locale);
+            if (value == null) {
+                value = _localization.get(_defaultLocale);
+            }
+            for (String k : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(k);
+                } else {
+                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
+                    return new String[0];
+                }
+            }
+
+            var resultList = (String[])value;
+            for (int i = 0; i < resultList.length; i++) {
+                String result = resultList[i];
+                var argKeys = args.keySet();
+                for (@RegExp var dirKey : argKeys) {
+                    @RegExp String finalKey;
+                    if (dirKey.startsWith("%"))
+                        finalKey = dirKey;
+                    else
+                        finalKey = "%" + dirKey + "%";
+                    result  = result.replace(finalKey, args.get(dirKey).toString());
+                }
+                resultList[i] = result;
+            }
+
+            return resultList;
+        }
+        catch (Exception ex)
+        {
+            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.error(ex.getMessage());
+            return new String[0];
+        }
+    }
+
+    /**
      * Checks if a directory is empty.
      *
      * @param dirPath The path to the directory.
