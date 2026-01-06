@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
@@ -47,6 +48,7 @@ public class GuiDupeDetector implements Listener {
      * @param plugin The plugin to register.
      * @return True if registration is successful, false otherwise.
      */
+    @SuppressWarnings("UnstableApiUsage")
     public static boolean register(Plugin plugin) {
         synchronized (lock) {
             if (primaryPlugin != null && primaryPlugin.isEnabled()) {
@@ -79,6 +81,7 @@ public class GuiDupeDetector implements Listener {
      * @param plugin The plugin to unregister.
      * @return True if unregistration is successful, false otherwise.
      */
+    @SuppressWarnings({"UnstableApiUsage", "UnusedReturnValue"})
     public static boolean unregister(Plugin plugin) {
         synchronized (lock) {
             if (!registeredPlugins.contains(plugin.getPluginMeta().getName())) {
@@ -112,6 +115,7 @@ public class GuiDupeDetector implements Listener {
      * @param itemStack The item to check.
      * @return True if the item is dupe protected, false otherwise.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isDuped(ItemStack itemStack) {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null)
@@ -134,8 +138,8 @@ public class GuiDupeDetector implements Listener {
     public void onItemPickup(InventoryPickupItemEvent event) {
         if (primaryPlugin == null)
             return;
-        var itemStack = event.getItem().getItemStack();
-        if (itemStack == null || itemStack.getType().isAir()) {
+        ItemStack itemStack = event.getItem().getItemStack();
+        if (itemStack.getType().isAir()) {
             return;
         }
 
@@ -156,8 +160,8 @@ public class GuiDupeDetector implements Listener {
     public void onItemSpawn(ItemSpawnEvent event) {
         if (primaryPlugin == null)
             return;
-        var itemStack = event.getEntity().getItemStack();
-        if (itemStack == null || itemStack.getType().isAir()) {
+        ItemStack itemStack = event.getEntity().getItemStack();
+        if (itemStack.getType().isAir()) {
             return;
         }
 
@@ -178,7 +182,7 @@ public class GuiDupeDetector implements Listener {
     public void onItemHover(InventoryClickEvent event) {
         if (primaryPlugin == null)
             return;
-        var itemStack = event.getCurrentItem();
+        ItemStack itemStack = event.getCurrentItem();
         if (itemStack == null || itemStack.getType().isAir()) {
             return;
         }
@@ -200,8 +204,8 @@ public class GuiDupeDetector implements Listener {
         if (primaryPlugin == null)
             return;
 
-        var itemStack = event.getItemDrop().getItemStack();
-        if (itemStack == null || itemStack.getType().isAir()) {
+        ItemStack itemStack = event.getItemDrop().getItemStack();
+        if (itemStack.getType().isAir()) {
             return;
         }
 
@@ -218,12 +222,12 @@ public class GuiDupeDetector implements Listener {
      * @param event The BlockPlaceEvent.
      */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onBlockPlace(org.bukkit.event.block.BlockPlaceEvent event) {
+    public void onBlockPlace(BlockPlaceEvent event) {
         if (primaryPlugin == null)
             return;
         Player player = event.getPlayer();
-        var itemStack = event.getItemInHand();
-        if (itemStack == null || itemStack.getType().isAir()) {
+        ItemStack itemStack = event.getItemInHand();
+        if (itemStack.getType().isAir()) {
             return;
         }
 
