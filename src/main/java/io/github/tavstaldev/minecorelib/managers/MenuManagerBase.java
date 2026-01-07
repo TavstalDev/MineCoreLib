@@ -13,7 +13,9 @@ public abstract class MenuManagerBase {
 
     public abstract void open(Player player, String menuId);
 
-    public abstract void close(Player player);
+    public abstract void close(Player player, boolean openingAnotherMenu);
 
     public abstract void refresh(Player player, String menuId);
+
+    public abstract boolean hasMenuOpen(Player player);
 }

@@ -212,7 +212,7 @@ public class ItemMetaSerializer {
                     //noinspection deprecation
                     if (meta.hasCustomModelData()) {
                         //noinspection deprecation
-                        var customModelData = meta.getCustomModelData();
+                        int customModelData = meta.getCustomModelData();
                         itemData.put("customModelData", customModelData);
                     }
                 }
