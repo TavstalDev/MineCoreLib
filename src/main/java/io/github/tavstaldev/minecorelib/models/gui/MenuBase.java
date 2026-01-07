@@ -4,11 +4,25 @@ import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
+import io.github.tavstaldev.minecorelib.utils.ChatUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
-public abstract class MenuBase extends ConfigurationBase implements IMenuBase  {
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public abstract class MenuBase extends ConfigurationBase  {
     protected final PluginBase plugin;
     protected final PluginLogger logger;
     protected final PluginTranslator translator;
+    protected String menuTitle;
+    protected boolean isMenuTitleTranslated;
+    protected int menuSize;
+    protected Set<MenuButton> menuButtons;
 
     public MenuBase(PluginBase plugin, String fileName) {
         super(plugin, "menus/" + fileName, null);
@@ -17,25 +31,19 @@ public abstract class MenuBase extends ConfigurationBase implements IMenuBase  {
         this.translator = plugin.getTranslator();
     }
 
-    /* PLAN
+    protected Set<MenuButton> resolveButtons(LinkedHashSet<MenuButton> defaultButtons) {
+        Set<MenuButton> buttons = new LinkedHashSet<>();
 
-        The menu base should contain mostly common functionality for menus,
-        A menu item should look like the following:
-
-
-
-        item:
-          material: DIAMOND_SWORD OR headTexture
-          title: "&aMy Item" OR "item.title" (from translator)
-          lore: list of lines OR "item.lore" (from translator), for easier implementation it probably should be a single string key
-          slot: 10 - fix slot of the item
-          slots: list of slots - alternative to slot, for multiple slots
-          action: NONE, CLOSE, BACK, COMMAND, OPEN - etc... but I do not plan to hardcode too many actions here, just the basic ones, probably for complex actions will be a just a placeholder or something
-          command: "/say hello" - only if action is COMMAND
-
-        Also for dynamic menus, there should be way to set the slots that can be filled dynamically
-        They probably should be just defined like above, but only support translator keys, and it should support only slots, no fixed slot
-
-
-     */
+        List<Map<?, ?>> buttonMap = this.getMapList("buttons");
+        if (buttonMap == null || buttonMap.isEmpty()) {
+            return defaultButtons;
+        }
+        for (Map<?, ?> actionMap : buttonMap) {
+            MenuButton action = MenuButton.fromMap(actionMap);
+            if (action != null) {
+                buttons.add(action);
+            }
+        }
+        return buttons;
+    }
 }

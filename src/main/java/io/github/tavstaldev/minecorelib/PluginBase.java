@@ -5,12 +5,15 @@ import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
+import io.github.tavstaldev.minecorelib.managers.MenuManagerBase;
+import io.github.tavstaldev.minecorelib.managers.SGMenuManager;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -34,6 +37,7 @@ public abstract class PluginBase extends JavaPlugin {
     private final HttpClient _httpClient;
     private final String _downloadUrl;
     private final boolean _hasGui;
+    private @Nullable MenuManagerBase _menuManager;
 
     /**
      * Constructs a new instance of the PluginBase class.
@@ -116,6 +120,19 @@ public abstract class PluginBase extends JavaPlugin {
     public @NotNull HttpClient getHttpClient() { return _httpClient; }
 
     /**
+     * Retrieves the menu manager instance for the plugin.
+     * <p>
+     * The menu manager is responsible for handling GUI-related functionality
+     * within the plugin. If the plugin does not have a GUI, this method will return {@code null}.
+     * </p>
+     *
+     * @return The {@link MenuManagerBase} instance if the plugin has a GUI, or {@code null} otherwise.
+     */
+    public @Nullable MenuManagerBase getMenuManager() {
+        return _menuManager;
+    }
+
+    /**
      * Called when the plugin is enabled.
      * If the plugin has a GUI, registers the plugin to the GUI dupe detector.
      */
@@ -123,6 +140,10 @@ public abstract class PluginBase extends JavaPlugin {
     public void onEnable() {
         if (_hasGui) {
             GuiDupeDetector.register(this);
+            _menuManager = new SGMenuManager(this);
+        }
+        else {
+            _menuManager = null;
         }
     }
 
