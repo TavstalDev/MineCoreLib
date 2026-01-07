@@ -5,6 +5,7 @@ plugins {
 
 val javaVersion: String by project
 val paperApiVersion: String by project
+val caffeineVersion: String by project
 val spiGuiVersion: String by project
 val projectPackageName = "${project.group}.minecorelib"
 
@@ -31,6 +32,9 @@ dependencies {
     // PaperMC dependency
     compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
 
+    // Caching
+    implementation("com.github.ben-manes.caffeine:caffeine:${caffeineVersion}")
+
     // SpiGUI for GUI creation
     implementation("com.samjakob:SpiGUI:${spiGuiVersion}")
 }
@@ -46,7 +50,11 @@ tasks.shadowJar {
     manifest {
         attributes["paperweight-mappings-namespace"] = "spigot" // Add custom manifest attributes
     }
+
+    minimize()
+
     // Relocate packages to avoid conflicts
+    relocate("com.github.benmanes.caffeine", "${projectPackageName}.shadow.caffeine")
     relocate("com.samjakob.spigui", "${projectPackageName}.shadow.spigui")
 }
 
