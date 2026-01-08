@@ -9,6 +9,7 @@ import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.*;
@@ -30,12 +31,13 @@ public abstract class MenuBase extends ConfigurationBase  {
         this.translator = plugin.getTranslator();
     }
 
-    protected HashMap<String, int[]> resolveDynamicSlots() {
+    protected HashMap<String, int[]> resolveDynamicSlots(HashMap<String, int[]> defaultDynamicSlots) {
         HashMap<String, int[]> dynamicSlots = new HashMap<>();
 
         ConfigurationSection section = this.getConfigurationSection("dynamicSlots");
-        if (section == null) {
-            return dynamicSlots;
+        if (section == null || section.getKeys(false).isEmpty()) {
+            this.set("dynamicSlots", defaultDynamicSlots);
+            return defaultDynamicSlots;
         }
         for (String key : section.getKeys(false)) {
             List<Integer> slotList = this.getIntegerList("dynamicSlots." + key);
@@ -50,6 +52,11 @@ public abstract class MenuBase extends ConfigurationBase  {
 
         List<Map<?, ?>> buttonMap = this.getMapList("buttons");
         if (buttonMap == null || buttonMap.isEmpty()) {
+            List<Map<String, Object>> defaultList = new ArrayList<>();
+            for (MenuButton button : defaultButtons) {
+                defaultList.add(button.toMap());
+            }
+            this.set("buttons", defaultList);
             return defaultButtons;
         }
         for (Map<?, ?> actionMap : buttonMap) {
@@ -64,4 +71,14 @@ public abstract class MenuBase extends ConfigurationBase  {
     public abstract SGMenu create(Player player);
 
     public abstract void refresh(Player player, SGMenu menu);
+
+    public abstract void executeCommand(Player player, String command);
+
+    public void onOpen(Player player) {
+        // optional
+    }
+
+    public void onClose(Player player) {
+        // optional
+    }
 }
