@@ -6,6 +6,7 @@ import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
+import io.github.tavstaldev.minecorelib.utils.GuiUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -21,7 +22,7 @@ public abstract class MenuBase extends ConfigurationBase  {
     protected String menuTitle;
     protected boolean isMenuTitleTranslated;
     protected int menuSize;
-    protected HashMap<String, int[]> dynamicSlots;
+    protected HashMap<String, List<Integer>> dynamicSlots;
     protected HashSet<MenuButton> menuButtons;
 
     public MenuBase(PluginBase plugin, String fileName) {
@@ -31,18 +32,20 @@ public abstract class MenuBase extends ConfigurationBase  {
         this.translator = plugin.getTranslator();
     }
 
-    protected HashMap<String, int[]> resolveDynamicSlots(HashMap<String, int[]> defaultDynamicSlots) {
-        HashMap<String, int[]> dynamicSlots = new HashMap<>();
+    protected HashMap<String, List<Integer>> resolveDynamicSlots(HashMap<String, List<String>> defaultDynamicSlots) {
+        HashMap<String, List<Integer>> dynamicSlots = new HashMap<>();
 
         ConfigurationSection section = this.getConfigurationSection("dynamicSlots");
         if (section == null || section.getKeys(false).isEmpty()) {
             this.set("dynamicSlots", defaultDynamicSlots);
-            return defaultDynamicSlots;
+            for (String key : defaultDynamicSlots.keySet()) {
+                dynamicSlots.put(key, GuiUtils.resolveSlots(defaultDynamicSlots.get(key)));
+            }
+            return dynamicSlots;
         }
         for (String key : section.getKeys(false)) {
-            List<Integer> slotList = this.getIntegerList("dynamicSlots." + key);
-            int[] slots = slotList.stream().mapToInt(Integer::intValue).toArray();
-            dynamicSlots.put(key, slots);
+            List<String> rawSlotList = this.getStringList("dynamicSlots." + key);
+            dynamicSlots.put(key, GuiUtils.resolveSlots(rawSlotList));
         }
         return dynamicSlots;
     }
@@ -51,7 +54,7 @@ public abstract class MenuBase extends ConfigurationBase  {
         HashSet<MenuButton> buttons = new LinkedHashSet<>();
 
         List<Map<?, ?>> buttonMap = this.getMapList("buttons");
-        if (buttonMap == null || buttonMap.isEmpty()) {
+        if (buttonMap.isEmpty()) {
             List<Map<String, Object>> defaultList = new ArrayList<>();
             for (MenuButton button : defaultButtons) {
                 defaultList.add(button.toMap());

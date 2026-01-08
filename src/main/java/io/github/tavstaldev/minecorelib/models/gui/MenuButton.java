@@ -7,6 +7,7 @@ import com.samjakob.spigui.menu.SGMenu;
 import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
+import io.github.tavstaldev.minecorelib.utils.GuiUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,10 +28,12 @@ public class MenuButton {
     private @Nullable final String title;
     private @Nullable final String titleKey;
     private @Nullable final String loreKey;
-    private @Nullable final String[] lore;
+    private @Nullable final List<String> lore;
     private @Nullable final Integer slot;
-    private @Nullable final Integer[] slots;
-    private @Nullable final String[] commands;
+    private @Nullable final List<String> slots;
+    private @Nullable final List<String> commands;
+
+    private List<Integer> slotCache = null;
 
     public MenuButton(Material material,
                       @Nullable String headTexture,
@@ -38,10 +41,10 @@ public class MenuButton {
                       @Nullable String title,
                       @Nullable String titleKey,
                       @Nullable String loreKey,
-                      @Nullable String[] lore,
+                      @Nullable List<String> lore,
                       @Nullable Integer slot,
-                      @Nullable Integer[] slots,
-                      @Nullable String[] commands) {
+                      @Nullable List<String> slots,
+                      @Nullable List<String> commands) {
         this.material = material;
         this.headTexture = headTexture;
         this.amount = amount;
@@ -60,10 +63,10 @@ public class MenuButton {
     public @Nullable String getTitle() { return title; }
     public @Nullable String getTitleKey() { return titleKey; }
     public @Nullable String getLoreKey() { return  loreKey; }
-    public @Nullable String[] getLore() { return lore; }
+    public @Nullable List<String> getLore() { return lore; }
     public @Nullable Integer getSlot() { return slot; }
-    public @Nullable Integer[] getSlotList() { return slots; }
-    public @Nullable String[] getCommands() { return commands; }
+    public @Nullable List<String> getSlotList() { return slots; }
+    public @Nullable List<String> getCommands() { return commands; }
 
     public ItemStack toItemStack(Player player, PluginTranslator translator) {
         ItemStack itemStack = new ItemStack(material, amount);
@@ -108,27 +111,30 @@ public class MenuButton {
         return new SGButton(itemStack);
     }
 
-    public Integer[] getSlots() {
+    public List<Integer> getSlots() {
         if (slots != null) {
-            return slots;
+            if (slotCache != null)
+                return slotCache;
+            slotCache = GuiUtils.resolveSlots(slots);
+            return slotCache;
         }
         else if (slot != null) {
-            return new Integer[] { slot };
+            return List.of(slot);
         }
         else {
-            return new Integer[] {};
+            return new ArrayList<>();
         }
     }
 
     public void apply(final Player player, final PluginTranslator translator, SGMenu sgMenu, MenuBase menu) {
-        Integer[] slots = getSlots();
-        if (slots.length == 0)
+        List<Integer> slots = getSlots();
+        if (slots.isEmpty())
             return;
 
         String playerName = player.getName();
-        String[] commands = getCommands();
+        List<String> commands = getCommands();
         SGButton btn = get(player, translator);
-        if (commands != null && commands.length > 0) {
+        if (commands != null && !commands.isEmpty()) {
             btn = btn.withListener((InventoryClickEvent event) -> {
                 for (String cmd : commands) {
                     menu.executeCommand(player, cmd.replace("%player%", playerName));
@@ -158,16 +164,16 @@ public class MenuButton {
             map.put("loreKey", loreKey);
         }
         if (lore != null) {
-            map.put("lore", Arrays.asList(lore));
+            map.put("lore", lore);
         }
         if (slot != null) {
             map.put("slot", slot);
         }
         if (slots != null) {
-            map.put("slots", Arrays.asList(slots));
+            map.put("slots", slots);
         }
         if (commands != null) {
-            map.put("commands", Arrays.asList(commands));
+            map.put("commands", commands);
         }
         return map;
     }
@@ -183,17 +189,17 @@ public class MenuButton {
             String titleKey = (String) map.get("titleKey");
             String loreKey = (String) map.get("loreKey");
 
-            String[] lore = map.containsKey("lore") && map.get("lore") instanceof List<?> loreList
-                    ? loreList.stream().map(Object::toString).toArray(String[]::new)
+            List<String> lore = map.containsKey("lore") && map.get("lore") instanceof List<?> loreList
+                    ? loreList.stream().map(Object::toString).toList()
                     : null;
 
             Integer slot = (Integer) map.get("slot");
-            Integer[] slots = map.containsKey("slots") && map.get("slots") instanceof List<?> slotsList
-                    ? slotsList.stream().map(obj -> (Integer) obj).toArray(Integer[]::new)
+            List<String> slots = map.containsKey("slots") && map.get("slots") instanceof List<?> slotsList
+                    ? slotsList.stream().map(Object::toString).toList()
                     : null;
 
-            String[] commands = map.containsKey("commands") && map.get("commands") instanceof List<?> commandList
-                    ? commandList.stream().map(Object::toString).toArray(String[]::new)
+            List<String> commands = map.containsKey("commands") && map.get("commands") instanceof List<?> commandList
+                    ? commandList.stream().map(Object::toString).toList()
                     : null;
 
             return new MenuButton(material, headTexture, amount, title, titleKey, loreKey, lore, slot, slots, commands);
