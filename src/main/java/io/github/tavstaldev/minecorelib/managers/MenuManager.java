@@ -8,67 +8,90 @@ import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.models.gui.MenuBase;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-public class SGMenuManager extends MenuManagerBase {
-    private final PluginLogger _logger = plugin.getCustomLogger().withModule(this.getClass());
+public class MenuManager {
+    private final PluginBase plugin;
+    private final PluginLogger logger;
     private final SpiGUI _spiGUI;
+    public SpiGUI getSpiGUI() {
+        return _spiGUI;
+    }
     private final HashMap<String, MenuBase> _registeredMenus = new HashMap<>();
     private final Cache<UUID, Map<String, SGMenu>> _openMenus = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(10))
             .maximumSize(10_000)
             .weakValues()
             .build();
-    private final HashSet<UUID> _playersWithOpenMenus = new HashSet<>();
+    private final HashMap<UUID, String> _playersWithOpenMenus = new HashMap<>();
 
-    public SGMenuManager(PluginBase plugin) {
-        super(plugin);
+    public MenuManager(PluginBase plugin) {
+        this.plugin = plugin;
+        this.logger = plugin.getCustomLogger().withModule(this.getClass());
         _spiGUI = new SpiGUI(plugin);
     }
 
-    @Override
+    public void register(String id, MenuBase menuBase) {
+        menuBase.load();
+        _registeredMenus.put(id, menuBase);
+        logger.debug("Registered menu with ID: " + id);
+    }
+
+    public void unregister(String id) {
+        _registeredMenus.remove(id);
+        logger.debug("Unregistered menu with ID: " + id);
+    }
+
     public void open(Player player, String menuId) {
         UUID playerId = player.getUniqueId();
+        MenuBase menuBase = _registeredMenus.get(menuId);
+        if (menuBase == null)
+            return;
+
         Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(playerId);
         if (playerMenus != null && playerMenus.containsKey(menuId)) {
             SGMenu existingMenu = playerMenus.get(menuId);
             player.openInventory(existingMenu.getInventory());
-            _playersWithOpenMenus.add(playerId);
+            menuBase.onOpen(player);
+            _playersWithOpenMenus.put(playerId, menuId);
             return;
         }
         else if (playerMenus == null) {
             playerMenus = new HashMap<>();
         }
 
-        MenuBase menuBase = _registeredMenus.get(menuId);
-        if (menuBase == null) {
-            return;
-        }
         SGMenu menu = menuBase.create(player);
         if (menu == null) {
-            _logger.error("Failed to create menu with ID: " + menuId + " for player: " + player.getName());
+            logger.error("Failed to create menu with ID: " + menuId + " for player: " + player.getName());
             return;
         }
         playerMenus.put(menuId, menu);
         _openMenus.put(playerId, playerMenus);
         player.openInventory(menu.getInventory());
-        _playersWithOpenMenus.add(playerId);
+        menuBase.onOpen(player);
+        _playersWithOpenMenus.put(playerId, menuId);
     }
 
-    @Override
     public void close(Player player, boolean openingAnotherMenu) {
         player.closeInventory();
+        String openedId = _playersWithOpenMenus.get(player.getUniqueId());
+        if (openedId != null) {
+            MenuBase menuBase = _registeredMenus.get(openedId);
+            if (menuBase != null) {
+                menuBase.onClose(player);
+            }
+        }
+
         if (openingAnotherMenu)
             return;
         _playersWithOpenMenus.remove(player.getUniqueId());
     }
 
-    @Override
     public void refresh(Player player, String menuId) {
         UUID playerId = player.getUniqueId();
         Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(playerId);
@@ -83,8 +106,22 @@ public class SGMenuManager extends MenuManagerBase {
         menuBase.refresh(player, menu);
     }
 
-    @Override
+    public @Nullable SGMenu getMenu(Player player, String menuId) {
+        Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(player.getUniqueId());
+        if (playerMenus != null && playerMenus.containsKey(menuId)) {
+            return playerMenus.get(menuId);
+        }
+        return null;
+    }
+
     public boolean hasMenuOpen(Player player) {
-        return _playersWithOpenMenus.contains(player.getUniqueId());
+        return _playersWithOpenMenus.containsKey(player.getUniqueId());
+    }
+
+    public void executeCommand(Player player, String menuId, String command) {
+        MenuBase menuBase = _registeredMenus.get(menuId);
+        if (menuBase == null)
+            return;
+        menuBase.executeCommand(player, command);
     }
 }

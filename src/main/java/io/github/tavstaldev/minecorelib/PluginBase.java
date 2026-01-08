@@ -5,8 +5,7 @@ import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
-import io.github.tavstaldev.minecorelib.managers.MenuManagerBase;
-import io.github.tavstaldev.minecorelib.managers.SGMenuManager;
+import io.github.tavstaldev.minecorelib.managers.MenuManager;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -37,7 +36,7 @@ public abstract class PluginBase extends JavaPlugin {
     private final HttpClient _httpClient;
     private final String _downloadUrl;
     private final boolean _hasGui;
-    private @Nullable MenuManagerBase _menuManager;
+    private @Nullable MenuManager _menuManager;
 
     /**
      * Constructs a new instance of the PluginBase class.
@@ -126,9 +125,9 @@ public abstract class PluginBase extends JavaPlugin {
      * within the plugin. If the plugin does not have a GUI, this method will return {@code null}.
      * </p>
      *
-     * @return The {@link MenuManagerBase} instance if the plugin has a GUI, or {@code null} otherwise.
+     * @return The {@link MenuManager} instance if the plugin has a GUI, or {@code null} otherwise.
      */
-    public @Nullable MenuManagerBase getMenuManager() {
+    public @Nullable MenuManager getMenuManager() {
         return _menuManager;
     }
 
@@ -140,7 +139,7 @@ public abstract class PluginBase extends JavaPlugin {
     public void onEnable() {
         if (_hasGui) {
             GuiDupeDetector.register(this);
-            _menuManager = new SGMenuManager(this);
+            _menuManager = new MenuManager(this);
         }
         else {
             _menuManager = null;
