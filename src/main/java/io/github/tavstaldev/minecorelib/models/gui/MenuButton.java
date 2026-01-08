@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -126,7 +127,7 @@ public class MenuButton {
         }
     }
 
-    public void apply(final Player player, final PluginTranslator translator, SGMenu sgMenu, MenuBase menu) {
+    public void apply(@NotNull final Player player, @NotNull final PluginTranslator translator, @NotNull SGMenu sgMenu, @NotNull MenuBase menu) {
         List<Integer> slots = getSlots();
         if (slots.isEmpty())
             return;
