@@ -51,7 +51,8 @@ tasks.shadowJar {
         attributes["paperweight-mappings-namespace"] = "spigot" // Add custom manifest attributes
     }
 
-    minimize()
+    exclude("com/google/**")
+    exclude("org/jspecify/**")
 
     // Relocate packages to avoid conflicts
     relocate("com.github.benmanes.caffeine", "${projectPackageName}.shadow.caffeine")
