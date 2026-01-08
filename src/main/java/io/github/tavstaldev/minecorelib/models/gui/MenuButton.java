@@ -3,6 +3,7 @@ package io.github.tavstaldev.minecorelib.models.gui;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.samjakob.spigui.buttons.SGButton;
+import com.samjakob.spigui.menu.SGMenu;
 import io.github.tavstaldev.minecorelib.core.GuiDupeDetector;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
@@ -10,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -52,13 +54,24 @@ public class MenuButton {
         this.commands = commands;
     }
 
+    public Material getMaterial() {return material; }
+    public @Nullable String getHeadTexture() { return headTexture; }
+    public Integer getAmount() { return  amount; }
+    public @Nullable String getTitle() { return title; }
+    public @Nullable String getTitleKey() { return titleKey; }
+    public @Nullable String getLoreKey() { return  loreKey; }
+    public @Nullable String[] getLore() { return lore; }
+    public @Nullable Integer getSlot() { return slot; }
+    public @Nullable Integer[] getSlotList() { return slots; }
+    public @Nullable String[] getCommands() { return commands; }
+
     public ItemStack toItemStack(Player player, PluginTranslator translator) {
         ItemStack itemStack = new ItemStack(material, amount);
         ItemMeta meta = itemStack.getItemMeta();
         if (titleKey != null) {
             meta.displayName(ChatUtils.translateColors(translator.localize(player, titleKey), true));
         } else if (title != null) {
-            meta.displayName(ChatUtils.translateColors(translator.localize(title),true));
+            meta.displayName(ChatUtils.translateColors(title,true));
         }
 
         List<Component> lore = new ArrayList<>();
@@ -69,7 +82,9 @@ public class MenuButton {
             }
         } else if (this.lore != null) {
             for (String line : this.lore) {
-                lore.add(ChatUtils.translateColors(translator.localize(line), true));
+                if (line == null)
+                    continue;
+                lore.add(ChatUtils.translateColors(line, true));
             }
         }
         meta.lore(lore);
@@ -105,8 +120,56 @@ public class MenuButton {
         }
     }
 
-    public String[] getCommands() {
-        return commands;
+    public void apply(final Player player, final PluginTranslator translator, SGMenu sgMenu, MenuBase menu) {
+        Integer[] slots = getSlots();
+        if (slots.length == 0)
+            return;
+
+        String playerName = player.getName();
+        String[] commands = getCommands();
+        SGButton btn = get(player, translator);
+        if (commands != null && commands.length > 0) {
+            btn = btn.withListener((InventoryClickEvent event) -> {
+                for (String cmd : commands) {
+                    menu.executeCommand(player, cmd.replace("%player%", playerName));
+                }
+            });
+        }
+        for (Integer slot : slots) {
+            sgMenu.setButton(0, slot, btn);
+        }
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        if (headTexture != null) {
+            map.put("head", headTexture);
+        } else {
+            map.put("material", material.toString());
+        }
+        map.put("amount", amount);
+        if (title != null) {
+            map.put("title", title);
+        }
+        if (titleKey != null) {
+            map.put("titleKey", titleKey);
+        }
+        if (loreKey != null) {
+            map.put("loreKey", loreKey);
+        }
+        if (lore != null) {
+            map.put("lore", Arrays.asList(lore));
+        }
+        if (slot != null) {
+            map.put("slot", slot);
+        }
+        if (slots != null) {
+            map.put("slots", Arrays.asList(slots));
+        }
+        if (commands != null) {
+            map.put("commands", Arrays.asList(commands));
+        }
+        return map;
     }
 
     public static @Nullable MenuButton fromMap(Map<?, ?> map) {
