@@ -21,7 +21,7 @@ public class MenuManager {
         return _spiGUI;
     }
     private final HashMap<String, MenuBase> _registeredMenus = new HashMap<>();
-    private final Cache<UUID, Map<String, SGMenu>> _openMenus = Caffeine.newBuilder()
+    private final Cache<UUID, Map<String, SGMenu>> _menuCache = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(10))
             .maximumSize(10_000)
             .weakValues()
@@ -51,7 +51,7 @@ public class MenuManager {
         if (menuBase == null)
             return;
 
-        Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(playerId);
+        Map<String, SGMenu> playerMenus = _menuCache.getIfPresent(playerId);
         if (playerMenus != null && playerMenus.containsKey(menuId)) {
             SGMenu existingMenu = playerMenus.get(menuId);
             player.openInventory(existingMenu.getInventory());
@@ -69,7 +69,7 @@ public class MenuManager {
             return;
         }
         playerMenus.put(menuId, menu);
-        _openMenus.put(playerId, playerMenus);
+        _menuCache.put(playerId, playerMenus);
         player.openInventory(menu.getInventory());
         menuBase.onOpen(player);
         _playersWithOpenMenus.put(playerId, menuId);
@@ -90,9 +90,27 @@ public class MenuManager {
         _playersWithOpenMenus.remove(player.getUniqueId());
     }
 
+    public void closeAll() {
+        for (UUID playerId : _playersWithOpenMenus.keySet()) {
+            Player player = plugin.getServer().getPlayer(playerId);
+            if (player != null && player.isOnline()) {
+                close(player, false);
+            }
+        }
+        _playersWithOpenMenus.clear();
+    }
+
+    public void invalidateCache(Player player) {
+        _menuCache.invalidate(player.getUniqueId());
+    }
+
+    public void invalidateAllCache() {
+        _menuCache.invalidateAll();
+    }
+
     public void refresh(Player player, String menuId) {
         UUID playerId = player.getUniqueId();
-        Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(playerId);
+        Map<String, SGMenu> playerMenus = _menuCache.getIfPresent(playerId);
         if (playerMenus == null || !playerMenus.containsKey(menuId))
             return;
 
@@ -105,7 +123,7 @@ public class MenuManager {
     }
 
     public @Nullable SGMenu getMenu(Player player, String menuId) {
-        Map<String, SGMenu> playerMenus = _openMenus.getIfPresent(player.getUniqueId());
+        Map<String, SGMenu> playerMenus = _menuCache.getIfPresent(player.getUniqueId());
         if (playerMenus != null && playerMenus.containsKey(menuId)) {
             return playerMenus.get(menuId);
         }
