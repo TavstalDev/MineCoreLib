@@ -85,6 +85,7 @@ public class ItemMetaSerializer {
                 }
 
                 // Add persistent data
+                //noinspection ConstantValue
                 if (item.getPersistentDataContainer() != null) {
                     Map<String, Object> persistentData = new HashMap<>();
                     var data = item.getPersistentDataContainer();
@@ -618,8 +619,9 @@ public class ItemMetaSerializer {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
             objectStream.writeObject(itemData);
-        } catch (IOException ex) {
-            _logger.error("An error occurred while serializing item: " + ex.getMessage());
+            return byteStream.toByteArray();
+        } catch (Exception ex) {
+            _logger.error("An error occurred while serializing item: " + ex);
         }
         return new byte[0];  // Return empty byte array if serialization fails
     }
@@ -637,8 +639,9 @@ public class ItemMetaSerializer {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
             objectStream.writeObject(itemDataList);
-        } catch (IOException ex) {
-            _logger.error("An error occurred while serializing items: " + ex.getMessage());
+            return byteStream.toByteArray();
+        } catch (Exception ex) {
+            _logger.error("An error occurred while serializing items: " + ex);
         }
         return new byte[0];  // Return empty byte array if serialization fails
     }
@@ -715,8 +718,8 @@ public class ItemMetaSerializer {
             }
 
             return deserializeItemStack(itemMap);
-        } catch (IOException | ClassNotFoundException ex) {
-            _logger.error("An error occurred while deserializing items: " + ex.getMessage());
+        } catch (Exception ex) {
+            _logger.error("An error occurred while deserializing items: " + ex);
         }
         return null;
     }
@@ -746,8 +749,8 @@ public class ItemMetaSerializer {
             }
 
             items = deserializeItemStackList(itemDataList);
-        } catch (IOException | ClassNotFoundException ex) {
-            _logger.error("An error occurred while deserializing items: " + ex.getMessage());
+        } catch (Exception ex) {
+            _logger.error("An error occurred while deserializing items: " + ex);
         }
         return items;
     }
