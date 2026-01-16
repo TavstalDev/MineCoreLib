@@ -361,15 +361,6 @@ public abstract class PluginBase extends JavaPlugin {
         return getTranslator().localizeList(key);
     }
 
-    /**
-     * Localizes a given key to its corresponding array of values.
-     *
-     * @param key the key to be localized.
-     * @return the localized array of strings, or an empty array if the key is not found.
-     */
-    public String[] localizeArray(String key) {
-       return getTranslator().localizeArray(key);
-    }
 
     /**
      * Localizes a given key to its corresponding value and formats it with the provided arguments.
@@ -402,17 +393,6 @@ public abstract class PluginBase extends JavaPlugin {
      */
     public List<String> localizeList(Player player, String key) {
         return getTranslator().localizeList(player, key);
-    }
-
-    /**
-     * Localizes a given key to its corresponding array of values for a specific player.
-     *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @return The localized array of strings, or an empty array if the key is not found.
-     */
-    public String[] localizeArray(Player player, String key) {
-        return getTranslator().localizeArray(player, key);
     }
 
     /**

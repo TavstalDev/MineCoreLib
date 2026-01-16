@@ -80,7 +80,7 @@ public class MenuButton {
 
         List<Component> lore = new ArrayList<>();
         if (loreKey != null) {
-            String[] loreLines = translator.localizeArray(player, loreKey);
+            List<String> loreLines = translator.localizeList(player, loreKey);
             for (String line : loreLines) {
                 lore.add(ChatUtils.translateColors(line, true));
             }

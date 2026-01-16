@@ -15,15 +15,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Utility class for handling localization using YAML files.
  */
-// TODO: Simplify the code by removing duplicate code blocks
 public class PluginTranslator {
     private final PluginBase _plugin;
     private final PluginLogger _logger;
@@ -168,8 +164,8 @@ public class PluginTranslator {
             return null;
 
         int fileVersion = 0;
-        String rawVersion = localize(localValue, "FileVersion");
-        if (rawVersion != null && !rawVersion.isEmpty()) {
+        String rawVersion = getVersion(localValue);
+        if (!rawVersion.isEmpty()) {
             try {
                 fileVersion = Integer.parseInt(rawVersion);
             } catch (NumberFormatException ex) {
@@ -204,8 +200,8 @@ public class PluginTranslator {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> resourceYaml = (Map<String, Object>) yamlObject;
                 int resourceVersion = 0;
-                String rawResourceVersion = localize(resourceYaml, "FileVersion");
-                if (rawResourceVersion != null && !rawResourceVersion.isEmpty()) {
+                String rawResourceVersion = getVersion(resourceYaml);
+                if (!rawResourceVersion.isEmpty()) {
                     try {
                         resourceVersion = Integer.parseInt(rawResourceVersion);
                     } catch (NumberFormatException ex) {
@@ -254,384 +250,143 @@ public class PluginTranslator {
         catch (Exception ex) {
             _logger.warn("Failed to get the player's locale.");
             _logger.error(ex.getMessage());
-            return "eng";
+            return _defaultLocale;
         }
     }
 
     /**
-     * Localizes a given key to its corresponding value from the provided locale list.
+     * Retrieves a localized string for the default locale.
      *
-     * @param localeList The map containing localization data.
-     * @param key The key to be localized.
-     * @return The localized string, or an empty string if the key is not found or an error occurs.
+     * @param key The key for the localization string.
+     * @return The localized string.
      */
-   private String localize(Map<String, Object> localeList, String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = localeList;
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the translation for the '%s' translation key.", key));
-                    return "";
-                }
-            }
+    public @NotNull String localize(@NotNull String key) {
+        return getLocalization(_defaultLocale, key);
+    }
 
-            return value.toString();
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
+    /**
+     * Retrieves a localized string for the default locale and replaces placeholders with arguments.
+     *
+     * @param key The key for the localization string.
+     * @param args The arguments to replace placeholders in the string.
+     * @return The localized string with placeholders replaced.
+     */
+    public @NotNull String localize(@NotNull String key, @NotNull Map<String, Object> args) {
+        String result = getLocalization(_defaultLocale, key);
+        if (result.isEmpty())
             return "";
-        }
+        return replaceArgs(result, args);
     }
 
     /**
-     * Localizes a given key to its corresponding value.
+     * Retrieves a localized string for a specific player.
      *
-     * @param key the key to be localized.
-     * @return the localized string, or an empty string if the key is not found.
+     * @param player The player whose locale is used.
+     * @param key The key for the localization string.
+     * @return The localized string.
      */
-    public String localize(String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value =_localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the translation for the '%s' translation key.", key));
-                    return "";
-                }
-            }
+    public @NotNull String localize(@NotNull Player player, @NotNull String key) {
+        String locale = getPlayerLocale(player);
+        if (!_localization.containsKey(locale))
+            return getLocalization(_defaultLocale, key);
+        return getLocalization(locale, key);
+    }
 
-            return value.toString();
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
+    /**
+     * Retrieves a localized string for a specific player and replaces placeholders with arguments.
+     *
+     * @param player The player whose locale is used.
+     * @param key The key for the localization string.
+     * @param args The arguments to replace placeholders in the string.
+     * @return The localized string with placeholders replaced.
+     */
+    public @NotNull String localize(@NotNull Player player, @NotNull String key, @NotNull Map<String, Object> args) {
+        String result = localize(player, key);
+        if (result.isEmpty())
             return "";
-        }
+        return replaceArgs(result, args);
     }
 
     /**
-     * Localizes a given key to its corresponding list of values.
+     * Retrieves a localized list of strings for the default locale.
      *
-     * @param key the key to be localized.
-     * @return the localized list of strings, or an empty list if the key is not found.
+     * @param key The key for the localization list.
+     * @return The localized list of strings.
      */
-    public List<String> localizeList(String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = _localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the translation for the '%s' translation key.", key));
-                    return new ArrayList<>();
-                }
-            }
+    public @NotNull List<String> localizeList(@NotNull String key) {
+        return getLocalizationList(_defaultLocale, key);
+    }
 
-            return (List<String>)value;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
+    /**
+     * Retrieves a localized list of strings for the default locale and replaces placeholders with arguments.
+     *
+     * @param key The key for the localization list.
+     * @param args The arguments to replace placeholders in the list.
+     * @return The localized list of strings with placeholders replaced.
+     */
+    public @NotNull List<String> localizeList(@NotNull String key, @NotNull Map<String, Object> args) {
+        List<String> resultList = getLocalizationList(_defaultLocale, key);
+        if (resultList.isEmpty())
             return new ArrayList<>();
-        }
+        return replaceArgs(resultList, args);
     }
 
     /**
-     * Localizes a given key to its corresponding array of values.
+     * Retrieves a localized list of strings for a specific player.
      *
-     * @param key the key to be localized.
-     * @return the localized array of strings, or an empty array if the key is not found.
+     * @param player The player whose locale is used.
+     * @param key The key for the localization list.
+     * @return The localized list of strings.
      */
-    public String[] localizeArray(String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = _localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the translation for the '%s' translation key.", key));
-                    return new String[0];
-                }
-            }
-
-            return (String[])value;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return new String[0];
-        }
+    public @NotNull List<String> localizeList(@NotNull Player player, @NotNull String key) {
+        String locale = getPlayerLocale(player);
+        if (!_localization.containsKey(locale))
+            return getLocalizationList(_defaultLocale, key);
+        return getLocalizationList(locale, key);
     }
 
     /**
-     * Localizes a given key to its corresponding value and formats it with the provided arguments.
+     * Retrieves a localized list of strings for a specific player and replaces placeholders with arguments.
      *
-     * @param key the key to be localized.
-     * @param args the arguments to format the localized string.
-     * @return the formatted localized string, or an empty string if the key is not found.
+     * @param player The player whose locale is used.
+     * @param key The key for the localization list.
+     * @param args The arguments to replace placeholders in the list.
+     * @return The localized list of strings with placeholders replaced.
      */
-    public String localize(String key, Map<String, Object> args) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = _localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the translation for the '%s' translation key.", key));
-                    return "";
-                }
-            }
-
-            // Get the keys
-            String result = value.toString();
-            var argKeys = args.keySet();
-            for (@RegExp var dirKey : argKeys) {
-                @RegExp String finalKey;
-                if (dirKey.startsWith("%"))
-                    finalKey = dirKey;
-                else
-                    finalKey = "%" + dirKey + "%";
-                result  = result.replace(finalKey, args.get(dirKey).toString());
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return "";
-        }
-    }
-
-    /**
-     * Localizes a given key to its corresponding list of values and formats it with the provided arguments.
-     *
-     * @param key The key to be localized.
-     * @param args The arguments to format the localized strings.
-     * @return A list of formatted localized strings, or an empty list if the key is not found.
-     */
-    public List<String> localizeList(String key, Map<String, Object> args) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = _localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation key.", key));
-                    return new ArrayList<>();
-                }
-            }
-
-            var resultList = (List<String>)value;
-            for (int i = 0; i < resultList.size(); i++) {
-                String result = resultList.get(i);
-                var argKeys = args.keySet();
-                for (@RegExp var dirKey : argKeys) {
-                    @RegExp String finalKey;
-                    if (dirKey.startsWith("%"))
-                        finalKey = dirKey;
-                    else
-                        finalKey = "%" + dirKey + "%";
-                    result  = result.replace(finalKey, args.get(dirKey).toString());
-                }
-                resultList.set(i, result);
-            }
-
-            return resultList;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
+    public @NotNull List<String> localizeList(@NotNull Player player, @NotNull String key, @NotNull Map<String, Object> args) {
+        List<String> resultList = localizeList(player, key);
+        if (resultList.isEmpty())
             return new ArrayList<>();
+        return replaceArgs(resultList, args);
+    }
+
+    /**
+     * Retrieves the version of the localization file from the map.
+     *
+     * @param localeMap The map containing localization data.
+     * @return The version of the localization file as a string.
+     */
+    private @NotNull String getVersion(Map<String, Object> localeMap) {
+        try {
+            if (!localeMap.containsKey("FileVersion"))
+                return "1";
+            return localeMap.get("FileVersion").toString();
+        }
+        catch (Exception ex) {
+            return "1";
         }
     }
 
     /**
-     * Localizes a given key to its corresponding array of values and formats it with the provided arguments.
+     * Retrieves a localized string for a specific locale and key.
      *
-     * @param key The key to be localized.
-     * @param args The arguments to format the localized strings.
-     * @return A formatted array of localized strings, or an empty array if the key is not found.
+     * @param locale The locale to use.
+     * @param key The key for the localization string.
+     * @return The localized string.
      */
-    public String[] localizeArray(String key, Map<String, Object> args) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            Object value = _localization.get(_defaultLocale);
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation key.", key));
-                    return new String[0];
-                }
-            }
-
-            var resultList = (String[])value;
-            for (int i = 0; i < resultList.length; i++) {
-                String result = resultList[i];
-                var argKeys = args.keySet();
-                for (@RegExp var dirKey : argKeys) {
-                    @RegExp String finalKey;
-                    if (dirKey.startsWith("%"))
-                        finalKey = dirKey;
-                    else
-                        finalKey = "%" + dirKey + "%";
-                    result  = result.replace(finalKey, args.get(dirKey).toString());
-                }
-                resultList[i] = result;
-            }
-
-            return resultList;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return new String[0];
-        }
-    }
-
-    /**
-     * Localizes a given key to its corresponding value for a specific player.
-     *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @return The localized string, or an empty string if the key is not found.
-     */
-    public String localize(Player player, String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
-            Object value = _localization.get(locale);
-            if (value == null) {
-                value = _localization.get(_defaultLocale);
-            }
-
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
-                    return "";
-                }
-            }
-
-            return value.toString();
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return "";
-        }
-    }
-
-    /**
-     * Localizes a given key to its corresponding list of values for a specific player.
-     *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @return The localized list of strings, or an empty list if the key is not found.
-     */
-    public List<String> localizeList(Player player, String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
-            Object value = _localization.get(locale);
-            if (value == null) {
-                value = _localization.get(_defaultLocale);
-            }
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
-                    return new ArrayList<>();
-                }
-            }
-
-            return (List<String>)value;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Localizes a given key to its corresponding array of values for a specific player.
-     *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @return The localized array of strings, or an empty array if the key is not found.
-     */
-    public String[] localizeArray(Player player, String key) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
-            Object value = _localization.get(locale);
-            if (value == null) {
-                value = _localization.get(_defaultLocale);
-            }
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
-                    return new String[0];
-                }
-            }
-
-            return (String[])value;
-        }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return new String[0];
-        }
-    }
-
-    /**
-     * Localizes a given key to its corresponding value for a specific player and formats it with the provided arguments.
-     *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @param args The arguments to format the localized string.
-     * @return The formatted localized string, or an empty string if the key is not found.
-     */
-    public String localize(Player player, String key, Map<String, Object> args) {
+    private @NotNull String getLocalization(@NotNull String locale, @NotNull String key) {
         try {
             String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
             Object value = _localization.get(locale);
             if (value == null) {
                 value = _localization.get(_defaultLocale);
@@ -645,40 +400,25 @@ public class PluginTranslator {
                 }
             }
 
-            // Get the keys
-            String result = value.toString();
-            var argKeys = args.keySet();
-            for (@RegExp var dirKey : argKeys) {
-                @RegExp String finalKey;
-                if (dirKey.startsWith("%"))
-                    finalKey = dirKey;
-                else
-                    finalKey = "%" + dirKey + "%";
-                result  = result.replace(finalKey, args.get(dirKey).toString());
-            }
-
-            return result;
-        } catch (Exception ex) {
+            return value.toString();
+        }
+        catch (Exception ex) {
             _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
             _logger.error(ex.getMessage());
             return "";
         }
-
     }
 
     /**
-     * Localizes a given key to its corresponding list of values for a specific player and formats it with the provided arguments.
+     * Retrieves a localized list of strings for a specific locale and key.
      *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @param args The arguments to format the localized strings.
-     * @return A list of formatted localized strings, or an empty list if the key is not found.
+     * @param locale The locale to use.
+     * @param key The key for the localization list.
+     * @return The localized list of strings.
      */
-    public List<String> localizeList(Player player, String key, Map<String, Object> args) {
-        try
-        {
+    private @NotNull List<String> getLocalizationList(@NotNull String locale, @NotNull String key) {
+        try {
             String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
             Object value = _localization.get(locale);
             if (value == null) {
                 value = _localization.get(_defaultLocale);
@@ -692,25 +432,14 @@ public class PluginTranslator {
                 }
             }
 
-            var resultList = (List<String>)value;
-            for (int i = 0; i < resultList.size(); i++) {
-                String result = resultList.get(i);
-                var argKeys = args.keySet();
-                for (@RegExp var dirKey : argKeys) {
-                    @RegExp String finalKey;
-                    if (dirKey.startsWith("%"))
-                        finalKey = dirKey;
-                    else
-                        finalKey = "%" + dirKey + "%";
-                    result  = result.replace(finalKey, args.get(dirKey).toString());
-                }
-                resultList.set(i, result);
+            if (value instanceof List<?>) {
+                return new ArrayList<>((List<String>) value);
+            } else {
+                _logger.warn(String.format("The value for key '%s' is not a list.", key));
+                return new ArrayList<>();
             }
-
-            return resultList;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
             _logger.error(ex.getMessage());
             return new ArrayList<>();
@@ -718,54 +447,39 @@ public class PluginTranslator {
     }
 
     /**
-     * Localizes a given key to its corresponding array of values for a specific player and formats it with the provided arguments.
+     * Replaces placeholders in a string with the provided arguments.
      *
-     * @param player The player whose locale is to be used for localization.
-     * @param key The key to be localized.
-     * @param args The arguments to format the localized strings.
-     * @return A formatted array of localized strings, or an empty array if the key is not found.
+     * @param text The string containing placeholders.
+     * @param args The arguments to replace placeholders.
+     * @return The string with placeholders replaced.
      */
-    public String[] localizeArray(Player player, String key, Map<String, Object> args) {
-        try
-        {
-            String[] keys = key.split("\\.");
-            String locale = getPlayerLocale(player);
-            Object value = _localization.get(locale);
-            if (value == null) {
-                value = _localization.get(_defaultLocale);
-            }
-            for (String k : keys) {
-                if (value instanceof Map) {
-                    value = ((Map<?, ?>) value).get(k);
-                } else {
-                    _logger.warn(String.format("Failed to get the '%s' translation for the '%s' translation key.", locale, key));
-                    return new String[0];
-                }
-            }
-
-            var resultList = (String[])value;
-            for (int i = 0; i < resultList.length; i++) {
-                String result = resultList[i];
-                var argKeys = args.keySet();
-                for (@RegExp var dirKey : argKeys) {
-                    @RegExp String finalKey;
-                    if (dirKey.startsWith("%"))
-                        finalKey = dirKey;
-                    else
-                        finalKey = "%" + dirKey + "%";
-                    result  = result.replace(finalKey, args.get(dirKey).toString());
-                }
-                resultList[i] = result;
-            }
-
-            return resultList;
+    private @NotNull String replaceArgs(@NotNull String text, @NotNull Map<String, Object> args) {
+        String result = text;
+        Set<String> argKeys = args.keySet();
+        for (@RegExp String dirKey : argKeys) {
+            @RegExp String finalKey;
+            if (dirKey.startsWith("%"))
+                finalKey = dirKey;
+            else
+                finalKey = "%" + dirKey + "%";
+            result = result.replace(finalKey, args.get(dirKey).toString());
         }
-        catch (Exception ex)
-        {
-            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
-            _logger.error(ex.getMessage());
-            return new String[0];
+        return result;
+    }
+
+    /**
+     * Replaces placeholders in a list of strings with the provided arguments.
+     *
+     * @param texts The list of strings containing placeholders.
+     * @param args The arguments to replace placeholders.
+     * @return The list of strings with placeholders replaced.
+     */
+    private @NotNull List<String> replaceArgs(@NotNull List<String> texts, @NotNull Map<String, Object> args) {
+        List<String> resultList = new ArrayList<>();
+        for (String text : texts) {
+            resultList.add(replaceArgs(text, args));
         }
+        return resultList;
     }
 
     /**
