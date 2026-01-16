@@ -23,6 +23,7 @@ import java.util.Map;
 /**
  * Utility class for handling localization using YAML files.
  */
+// TODO: Simplify the code by removing duplicate code blocks
 public class PluginTranslator {
     private final PluginBase _plugin;
     private final PluginLogger _logger;
@@ -418,6 +419,98 @@ public class PluginTranslator {
             _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
             _logger.error(ex.getMessage());
             return "";
+        }
+    }
+
+    /**
+     * Localizes a given key to its corresponding list of values and formats it with the provided arguments.
+     *
+     * @param key The key to be localized.
+     * @param args The arguments to format the localized strings.
+     * @return A list of formatted localized strings, or an empty list if the key is not found.
+     */
+    public List<String> localizeList(String key, Map<String, Object> args) {
+        try
+        {
+            String[] keys = key.split("\\.");
+            Object value = _localization.get(_defaultLocale);
+            for (String k : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(k);
+                } else {
+                    _logger.warn(String.format("Failed to get the '%s' translation key.", key));
+                    return new ArrayList<>();
+                }
+            }
+
+            var resultList = (List<String>)value;
+            for (int i = 0; i < resultList.size(); i++) {
+                String result = resultList.get(i);
+                var argKeys = args.keySet();
+                for (@RegExp var dirKey : argKeys) {
+                    @RegExp String finalKey;
+                    if (dirKey.startsWith("%"))
+                        finalKey = dirKey;
+                    else
+                        finalKey = "%" + dirKey + "%";
+                    result  = result.replace(finalKey, args.get(dirKey).toString());
+                }
+                resultList.set(i, result);
+            }
+
+            return resultList;
+        }
+        catch (Exception ex)
+        {
+            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.error(ex.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Localizes a given key to its corresponding array of values and formats it with the provided arguments.
+     *
+     * @param key The key to be localized.
+     * @param args The arguments to format the localized strings.
+     * @return A formatted array of localized strings, or an empty array if the key is not found.
+     */
+    public String[] localizeArray(String key, Map<String, Object> args) {
+        try
+        {
+            String[] keys = key.split("\\.");
+            Object value = _localization.get(_defaultLocale);
+            for (String k : keys) {
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(k);
+                } else {
+                    _logger.warn(String.format("Failed to get the '%s' translation key.", key));
+                    return new String[0];
+                }
+            }
+
+            var resultList = (String[])value;
+            for (int i = 0; i < resultList.length; i++) {
+                String result = resultList[i];
+                var argKeys = args.keySet();
+                for (@RegExp var dirKey : argKeys) {
+                    @RegExp String finalKey;
+                    if (dirKey.startsWith("%"))
+                        finalKey = dirKey;
+                    else
+                        finalKey = "%" + dirKey + "%";
+                    result  = result.replace(finalKey, args.get(dirKey).toString());
+                }
+                resultList[i] = result;
+            }
+
+            return resultList;
+        }
+        catch (Exception ex)
+        {
+            _logger.warn(String.format("Unknown error happened while translating '%s'.", key));
+            _logger.error(ex.getMessage());
+            return new String[0];
         }
     }
 
