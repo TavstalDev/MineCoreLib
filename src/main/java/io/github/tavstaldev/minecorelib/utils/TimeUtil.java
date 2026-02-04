@@ -9,17 +9,30 @@ import java.util.Map;
  * Utility class for time-related operations in the SkyBlockCore plugin.
  */
 public class TimeUtil {
+    /**
+     * Formats a duration given in milliseconds into a localized human-readable string.
+     * This method delegates to {@link #formatDurationSeconds(PluginBase, long)}
+     * after converting milliseconds to seconds.
+     *
+     * @param plugin the plugin instance used to access the translator for localization
+     * @param millis the duration in milliseconds to be formatted
+     * @return a localized human-readable string representing the duration
+     */
+    public static String formatDurationMillis(final PluginBase plugin, final long millis) {
+        return formatDurationSeconds(plugin, millis / 1000);
+    }
 
     /**
-     * Formats a timestamp into a human-readable, localized string.
-     * The formatted string includes days, hours, minutes, and seconds, if applicable.
+     * Formats a duration given in seconds into a localized human-readable string.
+     * The duration is broken down into days, hours, minutes, and seconds, and each
+     * unit is localized using the plugin's translator.
      *
-     * @param timestamp The timestamp in milliseconds to be formatted.
-     * @return A localized string representing the formatted time.
+     * @param plugin the plugin instance used to access the translator for localization
+     * @param seconds the duration in seconds to be formatted
+     * @return a localized human-readable string representing the duration
      */
-    public static String formatTimestamp(final PluginBase plugin, final long timestamp) {
+    public static String formatDurationSeconds(final PluginBase plugin, final long seconds) {
         final PluginTranslator translator = plugin.getTranslator();
-        final long seconds = timestamp / 1000L;
         long days = seconds / 86400;
         long hours = (seconds % 86400) / 3600;
         long minutes = (seconds % 3600) / 60;
@@ -43,15 +56,13 @@ public class TimeUtil {
     }
 
     /**
-     * Formats a countdown duration into a human-readable string.
-     * The formatted string is in the format "MM:SS" if minutes are present,
-     * or just seconds if less than a minute.
+     * Formats a countdown given in seconds into a "MM:SS" format if minutes are greater than 0,
+     * otherwise returns the seconds as a plain number.
      *
-     * @param milliseconds The duration in milliseconds to be formatted.
-     * @return A string representing the formatted countdown time.
+     * @param seconds the countdown duration in seconds
+     * @return a string representing the countdown in "MM:SS" format or plain seconds
      */
-    public static String formatCountdown(final long milliseconds) {
-        final long seconds = milliseconds / 1000L;
+    public static String formatCountdownMMSS(final long seconds) {
         long minutes = (seconds % 3600) / 60;
         long secs = seconds % 60;
 
@@ -59,8 +70,7 @@ public class TimeUtil {
         if (minutes > 0) {
             sb.append(String.format("%02d", minutes)).append(":");
             sb.append(String.format("%02d", secs));
-        }
-        else {
+        } else {
             sb.append(secs);
         }
 
